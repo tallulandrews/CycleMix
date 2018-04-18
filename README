@@ -1,1 +1,10 @@
-# scTarNet
+CycleMix
+
+This is an R package which assigns single cell RNASeq data to cell-cycle stages using annotated marker genes. Various sets of marker genes used in the literature are provided or users can provide their own, both positive and negative markers are supported. 
+
+Each stage is assigned independently using a gaussian mixture-model and cells can be assigned to one, multiple or no cell-cycle stage.
+
+Installation:
+
+>require("devtools")
+>install_github('tallulandrews/CycleMix')
