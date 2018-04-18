@@ -14,8 +14,8 @@
   \item{CC_table}{a dataframe with three columns: Gene, Stage, Dir}
   \item{phase}{which cell-cycle stage to assign cells to, must be a value found in "Stage" of CC_table}
   \item{expr_name}{name of the expression matrix to use, must be an element of assays(SCE), should be at minimum library-size normalized and log-transformed.}
-  \item(do.scale}{mean-center and scale variance of each gene.}
-  \item(symbol_column){name of the column of rowData(SCE) which contains HGNC gene symbols, if null uses rownames.}
+  \item{do.scale}{mean-center and scale variance of each gene.}
+  \item{symbol_column}{name of the column of rowData(SCE) which contains HGNC gene symbols, if null uses rownames.}
   \item{allow.multi}{allow cells to be assigned to multiple cell-cycle phases.}
 }
 \details{ Classifies cells as being in a particular phase of the cell-cycle by modelling the 

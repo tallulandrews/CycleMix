@@ -37,7 +37,7 @@ assignPhase <- function(SCE, CC_table, phase="G2M", expr_name="logcounts", do.sc
 	#pos_score <- colSums(exprmat*pos_dir)/sum(pos_dir)
 
 	# Fit Mixture Model
-	require("mclust")
+	#require("mclust")
 	fit <- mclust::Mclust(score, G=1:3)
 	fit$phase <- as.character(fit$classification)
 	
@@ -51,7 +51,7 @@ assignPhase <- function(SCE, CC_table, phase="G2M", expr_name="logcounts", do.sc
 }
 
 
-classifyCells <- function(SCE, CC_table, expr_name="logcounts", do.scale=TRUE, symbol_column="feature_symbol", allow.multi=FALSE) {
+classifyCells <- function(SCE, CC_table, expr_name="logcounts", do.scale=FALSE, symbol_column="feature_symbol", allow.multi=FALSE) {
 	out_list <- list()
 	stages <- as.character(unique(CC_table[,"Stage"]))
 	phases <- matrix(nrow=ncol(SCE), ncol=length(stages));

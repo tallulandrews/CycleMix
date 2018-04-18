@@ -1,29 +1,29 @@
 
 downloadEnsemblData <- function() {
-	#require("biomaRt")
-	hensembl = useMart(biomart="ensembl", dataset="hsapiens_gene_ensembl")
-	mensembl = useMart(biomart="ensembl", dataset="mmusculus_gene_ensembl")
+	requireNamespace("biomaRt")
+	hensembl = biomaRt::useMart(biomart="ensembl", dataset="hsapiens_gene_ensembl")
+	mensembl = biomaRt::useMart(biomart="ensembl", dataset="mmusculus_gene_ensembl")
 
-	ensg_name_map <- getBM(attributes=c("ensembl_gene_id","hgnc_symbol"), filters = "biotype", values="protein_coding", mart=hensembl)
-	ensg2musg <- getBM(attributes=c("ensembl_gene_id","mmusculus_homolog_ensembl_gene"),filters = "biotype", values="protein_coding", mart=hensembl)
-	musg_name_map <- getBM(attributes=c("ensembl_gene_id","mgi_symbol"), filters = "biotype", values="protein_coding", mart=mensembl)
+	ensg_name_map <- biomaRt::getBM(attributes=c("ensembl_gene_id","hgnc_symbol"), filters = "biotype", values="protein_coding", mart=hensembl)
+	ensg2musg <- biomaRt::getBM(attributes=c("ensembl_gene_id","mmusculus_homolog_ensembl_gene"),filters = "biotype", values="protein_coding", mart=hensembl)
+	musg_name_map <- biomaRt::getBM(attributes=c("ensembl_gene_id","mgi_symbol"), filters = "biotype", values="protein_coding", mart=mensembl)
 	return(list(Hname=ensg_name_map, Orth=ensg2musg, Mname=musg_name_map))
 }
 
 map_symbol_ensg <- function(maps, genes, is.org=c("Hsap","Mmus"), is.name=c("symbol","ensg")) {
 	if (is.org[1] == "Hsap") {
 		if(is.name[1]=="symbol") {
-			new = as.character(maps$ensg_name_map[match(genes, ensg_name_map[,2]),1])
+			new = as.character(maps$Hname[match(genes, maps$Hname[,2]),1])
 		} else if (is.name[1] =="ensg") {
-			new = as.character(maps$ensg_name_map[match(genes, ensg_name_map[,1]),2])
+			new = as.character(maps$Hname[match(genes, maps$Hname[,1]),2])
 		} else {
 			stop("Unrecognized name type")
 		}
 	} else if (is.org[1] == "Mmus") {
 		if(is.name[1]=="symbol") {
-			new = as.character(maps$musg_name_map[match(genes, musg_name_map[,2]),1])
+			new = as.character(maps$Mname[match(genes, maps$Mname[,2]),1])
 		} else if (is.name[1] =="ensg") {
-			new = as.character(maps$musg_name_map[match(genes, musg_name_map[,1]),2])
+			new = as.character(maps$Mname[match(genes, maps$Mname[,1]),2])
 		} else {
 			stop("Unrecognized name type")
 		}
@@ -36,9 +36,9 @@ map_symbol_ensg <- function(maps, genes, is.org=c("Hsap","Mmus"), is.name=c("sym
 
 map_Hsap_Mmus_one2one <- function(maps, genes, is.org=c("Hsap","Mmus")) {
 	if (is.org[1] == "Hsap") {
-		new = as.character(maps$ensg2musg[match(genes, ensg2musg[,1]),2])
+		new = as.character(maps$Orth[match(genes, maps$Orth[,1]),2])
 	} else if (is.org[1] == "Mmus") {
-		new = as.character(maps$ensg2musg[match(genes, ensg2musg[,2]),1])
+		new = as.character(maps$Orth[match(genes, maps$Orth[,2]),1])
 	} else {
 		stop("Unrecognized organism");
 	}

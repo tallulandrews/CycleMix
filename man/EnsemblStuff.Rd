@@ -29,6 +29,6 @@ Mapping human and mouse genes to HGNC or MGI gene symbols or across species.
 
 	# Convert Whitfield CC table for use in mouse
 	MGeneSets$Whitfield <- HGeneSets$Whitfield
-	MGeneSets$Whitfield$Gene <- mapGeneNames(maps, MGeneSets$Whitfield$Gene, in.org="Hsap", in.name="symbol", out.org="Mmus", out.name="symbol")
+	MGeneSets$Whitfield$Gene <- mapGeneNames(maps, as.character(MGeneSets$Whitfield$Gene), in.org="Hsap", in.name="symbol", out.org="Mmus", out.name="symbol")
 	MGeneSets$Whitfield <- MGeneSets$Whitfield[MGeneSets$Whitfield$Gene != "",] #remove genes without orthologs.
 }

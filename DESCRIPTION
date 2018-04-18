@@ -5,11 +5,12 @@ Title: Cell-Cycle using Mixture Models
 Author: Tallulah Andrews <tallulandrews@gmail.com>
 Maintainer: Tallulah Andrews <tallulandrews@gmail.com>
 Depends: R (>= 3.4.0)
-Imports: SingleCellExperiment mclust scater
-Suggests: knitr
+Imports: SingleCellExperiment, mclust, scater, SummarizedExperiment, matrixStats
+Suggests: knitr, biomaRt
 VignetteBuilder: knitr
 biocViews: RNASeq, Sequencing, Transcriptomics, GeneExpression, Software
 Collate: Ensembl_Stuff.R Analysis.R Plotting.R
+LazyData: true
 Description: This package uses mixture models to assign cells to different stages of the cell-cycle with wrapper for using scater to remove the effect of cell-cycle stage from your dataset. 
 URL: https://github.com/tallulandrews/CycleMix 
 BugReports: https://github.com/tallulandrews/CycleMix/issues

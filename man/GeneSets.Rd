@@ -10,9 +10,8 @@ Dir is the direction of differential expression : 1=upregulated, -1=downregulate
 Note: Genes may be differentially expressed in more than one stage and may appear in multiple dataframes
 }
 \usage{
-HGeneSets$Tirosh
-MGeneSets$Cyclone
-
+HGeneSets
+MGeneSets
 }
 \description{
 HGeneSets includes:

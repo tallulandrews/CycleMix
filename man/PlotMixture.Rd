@@ -1,22 +1,18 @@
-\name{regressCycle}
-\alias{regressCycle}
-\title{Regress out cell-cycle}
+\name{plotMixture}
+\alias{plotMixture}
+\title{Plot Mixture Model}
 \description{
-A wrapper for scater's normalizeExprs function to regress out the cell-cycle from a dataset.
+	Plots output from a single mixture model.
 }
 \usage{
-  regressCycle(SCE, classification, expr_name="logcounts", method=c("scores", "phase"))
+  plotMixture(fit, BIC=FALSE)
 }
 \arguments{
-  \item{SCE}{a SingleCellExperiment object.}
-  \item{classification}{output from \code{classifyCells}.}
-  \item{expr_name}{name of the expression matrix to use, must be an element of assays(SCE).}
-  \item{method}{which factor to regress on.}
+  \item{fit}{output from \code{assignPhase}}
+  \item{BIC}{whether to also plot the BICs for all the models considered.}
 }
 \details{
-	Creates a design matrix based on either the phase-signatures ("scores") or the 
-	phase assignments ("phase"). Then runs \code{normalizeExprs} from the scater package to 
-	regress out the cell-cycle.
+	Plots a histogram of the gene expression signature of a single cell-cycle phase across cells. Superimposes the fitted gaussian curves for the optimal model according to BIC. Optionally plots the BIC for all the models considered in the fitting.
 
 }
 \value{ 
@@ -24,7 +20,7 @@ A wrapper for scater's normalizeExprs function to regress out the cell-cycle fro
 }
 \examples{
 	fit <- assignPhase(Ex, MGeneSets$Cyclone, "G2M")
-	plotMixture(classification$fits[[1]], BIC=TRUE)
+	plotMixture(fit, BIC=TRUE)
 
 	classification <- classifyCells(Ex,  MGeneSets$Cyclone, do.scale=TRUE, allow.multi=FALSE);
 	plotMixture(classification$fits[[1]], BIC=FALSE)
