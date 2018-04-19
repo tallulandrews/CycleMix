@@ -19,6 +19,9 @@ plotMixture <- function(fit, BIC=FALSE) {
 	h <- hist(fit$data, prob=TRUE, col="grey85", xlab="Score", main="", breaks=20)
 	cols <- c("forestgreen", "darkorange", "blue")
 	for (i in 1:fit$G) {
+		if (is.na(fit$parameters$variance$sigmasq[i])) {
+			fit$parameters$variance$sigmasq[i] <- fit$parameters$variance$sigmasq[1]
+		}
 		distr_fxn <- function(x) { dnorm(x, mean=fit$parameters$mean[i], sd=sqrt(fit$parameters$variance$sigmasq[i]))*fit$parameters$pro[i] }
 		curve(distr_fxn(x), col=cols[i], add=TRUE, lwd=1.5)
 	}
