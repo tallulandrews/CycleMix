@@ -31,7 +31,7 @@ assignPhase <- function(SCE, CC_table, phase="G2M", expr_name="logcounts", do.sc
 	signature <- signature[keep,]
 
 	# Cell-Scores
-	score <- colMeans(exprmat*signature[,"Dir"])
+	score <- colSums(exprmat*signature[,"Dir"])/sum(abs(signature[,"Dir"]))
 	#pos_dir <- signature[,"Dir"]
 	#pos_dir[pos_dir < 0] <- 0
 	#pos_score <- colSums(exprmat*pos_dir)/sum(pos_dir)
