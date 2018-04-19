@@ -47,6 +47,7 @@ map_Hsap_Mmus_one2one <- function(maps, genes, is.org=c("Hsap","Mmus")) {
 }
 
 mapGeneNames<- function(maps, genes, in.org=c("Hsap","Mmus"), in.name=c("symbol","ensg"), out.org=c("Hsap","Mmus"), out.name=c("symbol","ensg")) {
+	genes <- as.character(genes)
 	if (in.org == out.org & in.name == out.name) {
 		# No change
 		return(genes)
