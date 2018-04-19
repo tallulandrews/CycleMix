@@ -23,9 +23,16 @@ plotMixture <- function(fit, BIC=FALSE) {
 		curve(distr_fxn(x), col=cols[i], add=TRUE, lwd=1.5)
 	}
 	
-	thresh <- min(fit$data[fit$phase!=""])
-	abline(v=thresh, col="red", lwd=3, lty=3)
-	y <- max(h$density)
-	x <- mean(h$breaks[h$breaks>thresh])
-	text(x, y, name, pos=3, offset=0.01, font=2, cex=1.25, col="black")
+	if (length(unique(fit$phase)) > 1) {
+		thresh <- min(fit$data[fit$phase!=""])
+		abline(v=thresh, col="red", lwd=3, lty=3)
+		y <- max(h$density)
+		x <- mean(h$breaks[h$breaks>thresh])
+		text(x, y, name, pos=3, offset=0.01, font=2, cex=1.25, col="black")
+	} else {
+		x <- max(h$breaks)
+		y <- max(h$density)
+		name <- "None"
+		text(x, y, name, pos=2, offset=0.01, font=2, cex=1, col="black")
+	}
 }
