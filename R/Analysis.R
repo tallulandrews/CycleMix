@@ -124,6 +124,6 @@ regressCycle <- function(SCE, classification, expr_name="logcounts", method=c("s
 	}
 
 	corrected <- apply(assays(SCE)[[expr_name]], 1, glm_fun)
-	assays(SCE)[["CC_cor"]] <- corrected;
+	assays(SCE)[["norm_exprs"]] <- t(corrected);
 	return(SCE);
 }
