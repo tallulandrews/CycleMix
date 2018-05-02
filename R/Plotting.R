@@ -31,11 +31,11 @@ plotMixture <- function(fit, BIC=FALSE) {
 		abline(v=thresh, col="red", lwd=3, lty=3)
 		y <- max(h$density)
 		x <- mean(h$breaks[h$breaks>thresh])
-		text(x, y, name, pos=3, offset=0.01, font=2, cex=1.25, col="black")
+		text(x, y, name, pos=3, offset=0.01, font=2, cex=1.25, col="black", xpd=TRUE)
 	} else {
 		x <- max(h$breaks)
 		y <- max(h$density)
 		name <- "None"
-		text(x, y, name, pos=2, offset=0.01, font=2, cex=1, col="black")
+		text(x, y, name, pos=2, offset=0.01, font=2, cex=1, col="black", xpd=TRUE)
 	}
 }
