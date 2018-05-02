@@ -52,6 +52,10 @@ assignPhase <- function(SCE, CC_table, phase="G2M", expr_name="logcounts", do.sc
 
 
 classifyCells <- function(SCE, CC_table, expr_name="logcounts", do.scale=FALSE, symbol_column="feature_symbol", allow.multi=FALSE) {
+	if (class(SCE)[1] != "SingleCellExperiment") {
+		stop("Error: Requires SingleCellExperiment object as input")
+	}
+
 	out_list <- list()
 	stages <- as.character(unique(CC_table[,"Stage"]))
 	phases <- matrix(nrow=ncol(SCE), ncol=length(stages));
@@ -75,15 +79,51 @@ classifyCells <- function(SCE, CC_table, expr_name="logcounts", do.scale=FALSE, 
 			})
 	}
 	best[best==""] <- "None"
+	scores <- as.matrix(scores)
+	colnames(scores) <- stages
 	return(list(phase=best, scores=scores, fits=out_list))
 }
 
-regressCycle <- function(SCE, classification, expr_name="logcounts", method=c("scores", "phase")){
+regressCycle_scater <- function(SCE, classification, expr_name="logcounts", method=c("scores", "phase")){
+	if (class(SCE)[1] != "SingleCellExperiment") {
+		stop("Error: Requires SingleCellExperiment object as input")
+	}
+
 	if (method[1] == "phase") {
 		design <- model.matrix(~classification$phase)
 	} else if (method[1] == "scores") {
 		design <- model.matrix(~classification$scores)
+	} else {
+		stop("Error: unrecognized method.")
 	}
 	SCE <- scater::normalizeExprs(SCE, design=design, return_norm_as_exprs=FALSE, exprs_values=expr_name)
+	return(SCE);
+}
+
+regressCycle <- function(SCE, classification, expr_name="logcounts", method=c("scores", "phase"), phases=c("G2M", "G1S")) {
+	glm_fun <- function(x) {
+		if (var(x) == 0) {return(x)}
+		model <- stats::model.matrix(~classification[[method]])
+		res <- glm(x~model[,-1])
+		eff <- vector();
+		mod <- vector();
+		for(p in phases) {
+			selected <- grep(p, names(res$coef))
+			eff <- c(eff, res$coef[selected])
+			mod <- cbind(mod, model[,selected])
+		}
+		eff <- eff*1/mean(x > 0); # adjust for not shifting zeros
+		norm <- mean(eff)
+		norm_factor <- -1*rowSums( t(t(mod)*eff) ) + rowSums( mod*norm );
+		zeros <- which (x == 0);
+		x <- x+norm_factor;
+		x[zeros] <- 0;
+		x[x < 0] <- 0;
+		
+		return(x)
+	}
+
+	corrected <- apply(assays(SCE)[[expr_name]], 1, glm_fun)
+	assays(SCE)[["CC_cor"]] <- corrected;
 	return(SCE);
 }
