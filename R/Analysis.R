@@ -100,10 +100,24 @@ regressCycle_scater <- function(SCE, classification, expr_name="logcounts", meth
 	return(SCE);
 }
 
-regressCycle <- function(SCE, classification, expr_name="logcounts", method=c("scores", "phase"), phases=c("G2M", "G1S")) {
+regressCycle_partial <- function(SCE, classification, expr_name="logcounts", method=c("scores", "phase"), phases=c("G2M", "G1S")) {
+	if (method == "phase") {
+		if (sum(phases %in% classification[[method]]) < 2) {stop("Error: Insufficient stages to regress out")}
+	} else if (method == "scores") {
+		if (sum(phases %in% colnames(classification[[method]])) < 2) {stop("Error: Insufficient stages to regress out")}
+	} else {
+		stop("Error: not a valid method")
+	}
+
+	if (method == "phase") {
+		lvls <- unique(classification[[method]])
+		f <- lvls[!lvls %in% phases]
+		classification[[method]] <- factor(classification[[method]], levels=c(f, phases));
+	}
+	model <- stats::model.matrix(~classification[[method]])
+
 	glm_fun <- function(x) {
 		if (var(x) == 0) {return(x)}
-		model <- stats::model.matrix(~classification[[method]])
 		res <- glm(x~model[,-1])
 		eff <- vector();
 		mod <- vector();
