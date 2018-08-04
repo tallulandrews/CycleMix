@@ -116,31 +116,32 @@ regressCycle_partial <- function(SCE, classification, expr_name="logcounts", met
 	}
 	model <- stats::model.matrix(~classification[[method]])
 
-	glm_fun <- function(x) {
-		if (var(x) == 0) {return(x)}
-		res <- glm(x~model[,-1])
-		eff <- vector();
-		mod <- vector();
-		for(p in phases) {
-			selected <- grep(p, names(res$coef))
-			eff <- c(eff, res$coef[selected])
-			mod <- cbind(mod, model[,selected])
-		}
-		eff <- eff*1/mean(x > 0); # adjust for not shifting zeros
-		norm <- mean(eff)
-		norm_factor <- -1*rowSums( t(t(mod)*eff) ) + rowSums( mod*norm );
-		zeros <- which (x == 0);
-		x <- x+norm_factor;
-		x[zeros] <- 0;
-		x[x < 0] <- 0;
-		
-		return(x)
-	}
 
-	corrected <- apply(assays(SCE)[[expr_name]], 1, glm_fun)
+	corrected <- apply(assays(SCE)[[expr_name]], 1, glm_fun, phases, model)
 	if (!identical(dim(corrected), dim(SCE))) {
 		corrected <- t(corrected)
 	}
 	assays(SCE)[["norm_exprs"]] <- corrected;
 	return(SCE);
+}
+
+glm_fun <- function(x, phases, model) {
+	if (var(x) == 0) {return(x)}
+	res <- glm(x~model[,-1])
+	eff <- vector();
+	mod <- vector();
+	for(p in phases) {
+		selected <- grep(p, names(res$coef))
+		eff <- c(eff, res$coef[selected])
+		mod <- cbind(mod, model[,selected])
+	}
+	eff <- eff*1/mean(x > 0); # adjust for not shifting zeros
+	norm <- mean(eff)
+	norm_factor <- -1*rowSums( t(t(mod)*eff) ) + rowSums( mod*norm );
+	zeros <- which (x == 0);
+	x <- x+norm_factor;
+	x[zeros] <- 0;
+	x[x < 0] <- 0;
+	
+	return(x)
 }

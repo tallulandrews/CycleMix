@@ -6,10 +6,11 @@
 Mapping human and mouse genes to HGNC or MGI gene symbols or across species.
 }
 \usage{
-  downloadEnsemblData()
+  downloadEnsemblData(host="www.ensembl.org")
   mapGeneNames(maps, genes, in.org=c("Hsap","Mmus"), in.name=c("symbol","ensg"), out.org=c("Hsap","Mmus"), out.name=c("symbol","ensg"))
 }
 \arguments{
+  \item{host}{URL to download ensembl data from (e.g. archive vs current).}
   \item{maps}{output from downloadEnsemblData.}
   \item{genes}{vector of gene IDs.}
   \item{in.org}{organism of input genes.}

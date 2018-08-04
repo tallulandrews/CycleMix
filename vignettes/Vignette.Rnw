@@ -1,4 +1,6 @@
 \documentclass[a4paper]{article}
+\usepackage{ listings }
+%\VignetteIndexEntry{Using CycleMix}
 \begin{document}
 
 \title{Cell-cycle assignment using Mixture Models}
@@ -18,7 +20,7 @@ require("CycleMix")
 \section*{Genesets}
 
 This package provides some published cell-cycle marker gene sets for human (HGeneSets) and mouse (MGeneSets).
-Sources of the gene sets can be found in the manual e.g. \code{?HGeneSets}.
+Sources of the gene sets can be found in the manual e.g. \texttt{?HGeneSets}.
 
 <<>>=
 names(HGeneSets)
@@ -32,12 +34,13 @@ head(MGeneSets$Cyclone)
 
 The "Dir" column is used to weight the gene expression we have simplified this to positive (1) and negative (-1) markers, but any numeric value can be used, for instance fold change. 
 
-We can convert human cell-cycle genes to mouse orthologs using \code{biomaRt} with our provided wrappers. For instance if we want to use the quiescence markers in mouse we would convert them as so:
+We can convert human cell-cycle genes to mouse orthologs using \texttt{biomaRt} with our provided wrappers. For instance if we want to use the quiescence markers in mouse we would convert them as so:
 
 <<>>=
-map <- downloadEnsemblData()
+require("biomaRt")
+#map <- downloadEnsemblData()
 mouse_g0 <- HGeneSets$Quiesc
-mouse_g0$Gene <- mapGeneNames(map, mouse_g0$Gene, in.name="symbol", in.org="Hsap", out.name="symbol", out.org="Mmus")
+#mouse_g0$Gene <- mapGeneNames(map, mouse_g0$Gene, in.name="symbol", in.org="Hsap", out.name="symbol", out.org="Mmus")
 mouse_g0 <- mouse_g0[mouse_g0$Gene != "",]
 @
 

@@ -1,8 +1,40 @@
+getEnsemblArchive <- function() {
+	tab <- biomaRt::listEnsemblArchives()
+	date <- matrix(unlist(strsplit(tab[,"date"], " ")), ncol=2, byrow=T)
+	date <- as.Date(paste(1, toupper(date[,1]), date[,2], sep="-"), format="%d-%b-%Y")
+	tab <- tab[order(date, decreasing=T),]
+	tab <- tab[ grepl("Ensembl [1-9]", tab[,1], ignore.case=F) , ]
+	return(tab[,"url"])	
+}
 
-downloadEnsemblData <- function() {
+downloadEnsemblData <- function(host="www.ensembl.org") {
 	requireNamespace("biomaRt")
-	hensembl = biomaRt::useMart(biomart="ensembl", dataset="hsapiens_gene_ensembl")
-	mensembl = biomaRt::useMart(biomart="ensembl", dataset="mmusculus_gene_ensembl")
+	archive <- getEnsemblArchive();
+	biomart_mart <- "ENSEMBL_MART_ENSEMBL"
+	hensembl <- tryCatch({
+		message(paste("Trying :", host[1]))
+		biomaRt::useMart(biomart=biomart_mart, dataset="hsapiens_gene_ensembl", host=host[1])
+	}, error=function(cond){
+		message("Error connecting to biomart, using archive")
+		message(paste("Using :", archive[1]))
+		return(biomaRt::useMart(biomart=biomart_mart, dataset="hsapiens_gene_ensembl", host=archive[1]))
+	}, warning=function(cond){
+		message(cond)
+		return(biomaRt::useMart(biomart=biomart_mart, dataset="hsapiens_gene_ensembl", host=host[1]))
+	})
+	
+		
+	mensembl <- tryCatch({
+		message(paste("Trying :", host[1]))
+		biomaRt::useMart(biomart=biomart_mart, dataset="mmusculus_gene_ensembl", host=host[1])
+	}, error=function(cond){
+		message("Error connecting to biomart, using archive")
+		message(paste("Using :", archive[1]))
+		return(biomaRt::useMart(biomart=biomart_mart, dataset="mmusculus_gene_ensembl", host=archive[1]))
+	}, warning=function(cond){
+		message(cond)
+		return(biomaRt::useMart(biomart=biomart_mart, dataset="mmusculus_gene_ensembl", host=host[1]))
+	})
 
 	ensg_name_map <- biomaRt::getBM(attributes=c("ensembl_gene_id","hgnc_symbol"), filters = "biotype", values="protein_coding", mart=hensembl)
 	ensg2musg <- biomaRt::getBM(attributes=c("ensembl_gene_id","mmusculus_homolog_ensembl_gene"),filters = "biotype", values="protein_coding", mart=hensembl)
