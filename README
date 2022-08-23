@@ -8,3 +8,5 @@ Installation:
 
 >require("devtools")
 >install_github('tallulandrews/CycleMix')
+
+[test]
