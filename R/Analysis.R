@@ -22,6 +22,7 @@ assignPhase <- function(SCE, CC_table, phase="G2M", expr_name="logcounts", do.sc
 	
 	# Match up
 	gene_names <- SummarizedExperiment::rowData(SCE)[ , symbol_column]
+	signature <- signature[signature[,"Gene"] %in% gene_names,]
 	matches <- base::match(signature[,"Gene"], gene_names)
 	exprmat <- exprmat[matches, ]
 	gene_names <- gene_names[matches]
