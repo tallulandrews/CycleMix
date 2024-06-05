@@ -24,6 +24,8 @@ HGeneSets includes:
 
 	Quiesc combination of G0 genes from Reactome, and quiescence markers from Cheung et al. 2013
 
+	Seurat originates from v4 of the Seurat package.
+
 MGeneSets includes:
 
 	Cyclone all genes used by the pre-computed mouse classifier in cyclone (Scialdone et al. 2015). Each gene was 

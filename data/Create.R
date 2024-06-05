@@ -36,6 +36,10 @@
 #G0 <- cbind(G0, rep(1, times=length(G0)))
 #HGeneSets$Quiesc <- unique(data.frame(Gene=c(Quiesc[,1], G0[,1]), Stage=rep("G0", times=nrow(Quiesc)+nrow(G0)), Dir=c(Quiesc[,2], G0[,2])))
 #
+# require(Seurat)
+# tab <- data.frame(Gene=c(cc.genes$s.genes, cc.genes$g2m.genes), Stage=c(rep("G1S", length(cc.genes$s.genes)), rep("G2M", length(cc.genes$g2m.genes))))
+# tab$Dir <- 1
+# HGeneSets$Seurat <- tab
 #save(HGeneSets, file="HGenes.rda", compress="xz")
 #
 ## mouse:
