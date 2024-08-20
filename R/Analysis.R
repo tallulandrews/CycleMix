@@ -85,7 +85,7 @@ classifyCells <- function(SCE, CC_table, expr_name="logcounts", do.scale=FALSE, 
 	return(list(phase=best, scores=scores, fits=out_list))
 }
 
-regressCycle_scater <- function(SCE, classification, expr_name="logcounts", method=c("scores", "phase")){
+regressCycleScater <- function(SCE, classification, expr_name="logcounts", method=c("scores", "phase")){
 	if (class(SCE)[1] != "SingleCellExperiment") {
 		stop("Error: Requires SingleCellExperiment object as input")
 	}
@@ -101,48 +101,80 @@ regressCycle_scater <- function(SCE, classification, expr_name="logcounts", meth
 	return(SCE);
 }
 
-regressCycle_partial <- function(SCE, classification, expr_name="logcounts", method=c("scores", "phase"), phases=c("G2M", "G1S")) {
+# regresses out the differences between only the specified cell cycle phases
+# first phase will be used as the reference phase for discrete regression
+regressCyclePartial <- function(expr_mat, classification, expr_name="logcounts", method=c("scores", "phase"), phases=c("G2M", "G1S"), allow_negative=FALSE) {
 	if (method == "phase") {
-		if (sum(phases %in% classification[[method]]) < 2) {stop("Error: Insufficient stages to regress out")}
+		existing_phases <- unique(classification[[method]])
+		if (sum(phases %in% existing_phases) < 2) {stop("Error: Insufficient stages to regress out")}
 	} else if (method == "scores") {
-		if (sum(phases %in% colnames(classification[[method]])) < 2) {stop("Error: Insufficient stages to regress out")}
+		existing_phases <- colnames(classification[[method]])
+		if (sum(phases %in% existing_phases) < 1) {stop("Error: Insufficient stages to regress out")}
 	} else {
 		stop("Error: not a valid method")
 	}
 
+	if (sum(phases %in% existing_phases) < length(existing_phases)){
+		missing <- phases[!phases %in% existing_phases]
+		phases <- phases[phases %in% existing_phases]
+		warning(paste(paste(missing, collapse=","), "not found and will not be regressed."))
+	}
+
 	if (method == "phase") {
-		lvls <- unique(classification[[method]])
-		f <- lvls[!lvls %in% phases]
-		classification[[method]] <- factor(classification[[method]], levels=c(f, phases));
+		new_phase_labels <- as.character(classification[[method]])
+		new_phase_labels[!new_phase_labels %in% phases] <- "Other"
+		ref_label <- phases[1]
+		new_phase_labels <- factor(new_phase_labels, levels=c(ref_label, phases[2:length(phases)], "Other"))
+		
+		model <- stats::model.matrix(~new_phase_labels)
+		model <- model[,colSums(model)>0] # remove any columns with no cells present.
+		corrected <- apply(expr_mat, 1, glm_discrete, phases, model, allow_negative)
 	}
-	model <- stats::model.matrix(~classification[[method]])
 
-
-	corrected <- apply(assays(SCE)[[expr_name]], 1, glm_fun, phases, model)
-	if (!identical(dim(corrected), dim(SCE))) {
-		corrected <- t(corrected)
+	if (method == "scores") {
+		model <- stats::model.matrix(~classification[[method]])
+		corrected <- apply(expr_mat, 1, glm_continuous, phases, model, allow_negative)
 	}
-	assays(SCE)[["norm_exprs"]] <- corrected;
-	return(SCE);
+	return(corrected);
 }
 
-glm_fun <- function(x, phases, model) {
+glm_discrete <- function(x, phases, model, allow_negative=FALSE) {
 	if (var(x) == 0) {return(x)}
-	res <- glm(x~model[,-1])
-	eff <- vector();
-	mod <- vector();
-	for(p in phases) {
-		selected <- grep(p, names(res$coef))
-		eff <- c(eff, res$coef[selected])
-		mod <- cbind(mod, model[,selected])
+	if (min(x) >=0) {
+		print("Assuming expression values should be >=0")
 	}
-	eff <- eff*1/mean(x > 0); # adjust for not shifting zeros
-	norm <- mean(eff)
-	norm_factor <- -1*rowSums( t(t(mod)*eff) ) + rowSums( mod*norm );
-	zeros <- which (x == 0);
-	x <- x+norm_factor;
-	x[zeros] <- 0;
-	x[x < 0] <- 0;
-	
-	return(x)
+	res <- MASS::glm.nb(x~model)
+	# Coeffs are average difference 
+	change <- rep(0, nrow(model))
+	to_change <- colnames(model)
+	to_change <- to_change[!(grepl("Intercept", to_change) | grepl("Other", to_change))]
+	for (coeff in to_change) {
+		this_eff <- res$coefficients[coeff]
+		if (!allow_negative) { #adjust for not changing 0s
+			adj <- mean(x[model[,coeff]==1] > 0) # proportion of non-0s - these won't be changed
+			this_eff <- this_eff*1/adj; # adjust for not shifting zeros
+		}
+		change[model[,coeff] == 1] <- this_eff
+	}
+	out <- x-change
+	if (min(x) >=0) {
+		out[out < 0] <- 0
+		out[x==0] <- 0
+	}
+	return(out)
 }
+glm_continuous <- function(x, model, allow_negative=FALSE) {
+	if (var(x) == 0) {return(x)}
+	res <- MASS::glm.nb(x~model)
+	out <- res$residuals
+	if (!allow_negative) {
+		adj <- sum(out < 0)/length(out);	
+		diff <- x-out
+		diff <- diff/adj
+		out <- x-diff
+		out[out<0] <- 0
+		return(out)
+	} else{
+		return(out)
+	}
+}	
