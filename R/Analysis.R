@@ -23,6 +23,9 @@ assignPhase <- function(SCE, CC_table, phase="G2M", expr_name="logcounts", do.sc
 	# Match up
 	gene_names <- SummarizedExperiment::rowData(SCE)[ , symbol_column]
 	signature <- signature[signature[,"Gene"] %in% gene_names,]
+	if (nrow(signature) < 5) {
+		stop("Error: fewer than 5 phase genes detected in SCE. Check gene names of the CC table match the gene names in the SCE.")
+	}
 	matches <- base::match(signature[,"Gene"], gene_names)
 	exprmat <- exprmat[matches, ]
 	gene_names <- gene_names[matches]
@@ -32,10 +35,10 @@ assignPhase <- function(SCE, CC_table, phase="G2M", expr_name="logcounts", do.sc
 	signature <- signature[keep,]
 
 	# Cell-Scores
-	score <- colSums(exprmat*signature[,"Dir"])/sum(abs(signature[,"Dir"]))
+	score <- Matrix::colSums(exprmat*signature[,"Dir"])/sum(abs(signature[,"Dir"]))
 	#pos_dir <- signature[,"Dir"]
 	#pos_dir[pos_dir < 0] <- 0
-	#pos_score <- colSums(exprmat*pos_dir)/sum(pos_dir)
+	#pos_score <- Matrix::colSums(exprmat*pos_dir)/sum(pos_dir)
 
 	# Fit Mixture Model
 	#require("mclust")
@@ -127,7 +130,7 @@ regressCyclePartial <- function(expr_mat, classification, expr_name="logcounts",
 		new_phase_labels <- factor(new_phase_labels, levels=c(ref_label, phases[2:length(phases)], "Other"))
 		
 		model <- stats::model.matrix(~new_phase_labels)
-		model <- model[,colSums(model)>0] # remove any columns with no cells present.
+		model <- model[,Matrix::colSums(model)>0] # remove any columns with no cells present.
 		corrected <- apply(expr_mat, 1, glm_discrete, phases, model, allow_negative)
 	}
 
