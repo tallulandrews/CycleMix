@@ -106,69 +106,114 @@ regressCycleScater <- function(SCE, classification, expr_name="logcounts", metho
 
 # regresses out the differences between only the specified cell cycle phases
 # first phase will be used as the reference phase for discrete regression
-regressCyclePartial <- function(expr_mat, classification, expr_name="logcounts", method=c("scores", "phase"), phases=c("G2M", "G1S"), allow_negative=FALSE) {
+regressCyclePartial <- function(expr_mat, classification, type=c("counts","norm"), method=c("scores", "phase"), phases=c("G2M", "G1S"), allow_negative=FALSE, subsample_cells=ncol(expr_mat)) {
+
+	if (class(classification) != "list") {
+		existing_phases <- unique(classification)
+		method = "phase"
+	} else {
+		classification <- classification[[method]]
+	}
+		
 	if (method == "phase") {
-		existing_phases <- unique(classification[[method]])
+		existing_phases <- unique(classification)
 		if (sum(phases %in% existing_phases) < 2) {stop("Error: Insufficient stages to regress out")}
 	} else if (method == "scores") {
-		existing_phases <- colnames(classification[[method]])
+		existing_phases <- colnames(classification)
 		if (sum(phases %in% existing_phases) < 1) {stop("Error: Insufficient stages to regress out")}
 	} else {
 		stop("Error: not a valid method")
 	}
 
-	if (sum(phases %in% existing_phases) < length(existing_phases)){
+
+	if (sum(phases %in% existing_phases) < length(phases)){
 		missing <- phases[!phases %in% existing_phases]
 		phases <- phases[phases %in% existing_phases]
 		warning(paste(paste(missing, collapse=","), "not found and will not be regressed."))
 	}
 
+
 	if (method == "phase") {
-		new_phase_labels <- as.character(classification[[method]])
+		new_phase_labels <- as.character(classification)
 		new_phase_labels[!new_phase_labels %in% phases] <- "Other"
+		phase_counts <- table(new_phase_labels);
+		# Subsample cells
+		cells <- c()
+		if (subsample_cells < ncol(expr_mat)) {
+			if (min(phase_counts) < ceiling(subsample_cells/length(phase_counts))) {
+				to_sample <- min(phase_counts)
+			} else {
+				to_sample <- ceiling(subsample_cells/length(phase_counts))
+			}
+			for (phase in names(phase_counts)) {
+				cells <- c(cells, sample(colnames(expr_mat)[new_phase_labels==phase], size=to_sample))
+			}
+			if (length(cells) < subsample_cells) {
+				cells <- c(cells, sample(colnames(expr_mat)[! colnames(expr_mat) %in% cells], size=subsample_cells-length(cells)))
+			}
+		} else {
+			cells = colnames(expr_mat)
+		}
+
+
 		ref_label <- phases[1]
 		new_phase_labels <- factor(new_phase_labels, levels=c(ref_label, phases[2:length(phases)], "Other"))
 		
 		model <- stats::model.matrix(~new_phase_labels)
 		model <- model[,Matrix::colSums(model)>0] # remove any columns with no cells present.
-		corrected <- apply(expr_mat, 1, glm_discrete, phases, model, allow_negative)
+		corrected <- apply(expr_mat, 1, glm_discrete, phases, model, type, allow_negative, colnames(expr_mat) %in% cells)
 	}
 
 	if (method == "scores") {
-		model <- stats::model.matrix(~classification[[method]])
-		corrected <- apply(expr_mat, 1, glm_continuous, phases, model, allow_negative)
+		model <- stats::model.matrix(~classification)
+		corrected <- apply(expr_mat, 1, glm_continuous, phases, model, type, allow_negative)
 	}
-	return(corrected);
+	return(t(corrected));
 }
 
-glm_discrete <- function(x, phases, model, allow_negative=FALSE) {
-	if (var(x) == 0) {return(x)}
-	if (min(x) >=0) {
-		print("Assuming expression values should be >=0")
+glm_discrete <- function(x, phases, model, type=c("counts", "norm"), allow_negative=FALSE, tofit.cells=colnames(x)) {
+	if (sum(tofit.cells) < length(x)) {
+		x2 <- x[tofit.cells]
+		model2 <- model[tofit.cells,]
+	} else {
+		x2 <- x
+		model2 <- model
 	}
-	res <- MASS::glm.nb(x~model)
+	if (var(x2) == 0) {return(x)}
+
+
+	if (type[1] == "counts") {
+		res <- MASS::glm.nb(x2~model2)
+	} else if (type[1] == "norm") {
+		res <- glm(x2~model2)
+	}
 	# Coeffs are average difference 
-	change <- rep(0, nrow(model))
-	to_change <- colnames(model)
+	change <- rep(0, length(x))
+	to_change <- names(res$coefficients)
 	to_change <- to_change[!(grepl("Intercept", to_change) | grepl("Other", to_change))]
 	for (coeff in to_change) {
 		this_eff <- res$coefficients[coeff]
 		if (!allow_negative) { #adjust for not changing 0s
-			adj <- mean(x[model[,coeff]==1] > 0) # proportion of non-0s - these won't be changed
+			adj <- mean(x[model[,sub("model2", "",coeff)]==1] > 0) # proportion of non-0s - these won't be changed
 			this_eff <- this_eff*1/adj; # adjust for not shifting zeros
 		}
-		change[model[,coeff] == 1] <- this_eff
+		change[model[,sub("model2", "",coeff)] == 1] <- this_eff
 	}
 	out <- x-change
-	if (min(x) >=0) {
+	if (!allow_negative) {
 		out[out < 0] <- 0
 		out[x==0] <- 0
 	}
 	return(out)
 }
-glm_continuous <- function(x, model, allow_negative=FALSE) {
+
+glm_continuous <- function(x, model,  type=c("counts", "norm"), allow_negative=FALSE) {
 	if (var(x) == 0) {return(x)}
-	res <- MASS::glm.nb(x~model)
+	        if (type[1] == "counts") {
+                res <- MASS::glm.nb(x~model)
+        } else if (type[1] == "norm") {
+                res <- glm(x~model)
+        }
 	out <- res$residuals
 	if (!allow_negative) {
 		adj <- sum(out < 0)/length(out);	
