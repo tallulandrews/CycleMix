@@ -1,4 +1,4 @@
-prepData <- function(obj, do.scale=FALSE, expr_name="logcounts", symbol_column="feature_symbol") {
+prepData <- function(obj, expr_name="logcounts", do.scale=FALSE, symbol_column="feature_symbol") {
 	gene_names <- rownames(obj)
 
 	if (class(obj)[1] == "SingleCellExperiment") {
