@@ -6,16 +6,17 @@
 	Uses mixed-gaussian distributions to assign cells to different cell-cycle stages according to provided marker/DE genes.
 }
 \usage{
-  assignPhase(SCE, CC_table, phase="G2M", expr_name="logcounts", do.scale=FALSE, symbol_column="feature_symbol")
-  classifyCells(SCE, CC_table, expr_name="logcounts", do.scale=FALSE, symbol_column="feature_symbol", allow.multi=FALSE)
+  assignPhase(expr_mat, CC_table, phase="G2M")
+  classifyCells(obj, CC_table, expr_name="logcounts", do.scale=FALSE, symbol_column="feature_symbol", allow.multi=FALSE)
 }
 \arguments{
-  \item{SCE}{a SingleCellExperiment object.}
+  \item{expr_mat}{a matrix or Matrix with rownames that match the gene names in the CC_table.}
+  \item{obj}{a SingleCellExperiment object or a Seurat object or a matrix/Matrix.}
   \item{CC_table}{a dataframe with three columns: Gene, Stage, Dir}
   \item{phase}{which cell-cycle stage to assign cells to, must be a value found in "Stage" of CC_table}
-  \item{expr_name}{name of the expression matrix to use, must be an element of assays(SCE), should be at minimum library-size normalized and log-transformed.}
-  \item{do.scale}{mean-center and scale variance of each gene.}
-  \item{symbol_column}{name of the column of rowData(SCE) which contains HGNC gene symbols, if null uses rownames.}
+  \item{expr_name}{name of the expression matrix to use, must be an element of assays(SCE), should be at minimum library-size normalized and log-transformed. If obj is a Seurat object the "assay" from which to obtain the "data" matrix from.}
+  \item{do.scale}{whether to mean-center and scale variance of each gene.}
+  \item{symbol_column}{name of the column of rowData(SCE) which contains HGNC gene symbols, if set to NULL uses rownames.}
   \item{allow.multi}{allow cells to be assigned to multiple cell-cycle phases.}
 }
 \details{ Classifies cells as being in a particular phase of the cell-cycle by modelling the 
@@ -44,7 +45,8 @@ has the highest signature.
 	"fits" : a list of output from assignPhase.
 }
 \examples{
-	fit <- assignPhase(Ex, MGeneSets$Cyclone, phase="G2M")
+	exprmat <- prepData(Ex) # Ex = SingleCellExperiment Object
+	fit <- assignPhase(exprmat, MGeneSets$Cyclone, phase="G2M")
 	classification <- classifyCells(Ex,  MGeneSets$Cyclone, do.scale=TRUE, allow.multi=FALSE);
 	classification <- classifyCells(Ex,  MGeneSets$Cyclone, do.scale=FALSE, allow.multi=TRUE);
 }
