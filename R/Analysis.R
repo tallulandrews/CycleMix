@@ -1,38 +1,39 @@
 prepData <- function(obj, expr_name="logcounts", do.scale=FALSE, symbol_column="feature_symbol") {
 	gene_names <- rownames(obj)
 
+	expr_mat <- c()
 	if (class(obj)[1] == "SingleCellExperiment") {
-		exprmat <- SummarizedExperiment::assays( SCE )[[expr_name]]
-		gene_names <- rownames(exprmat)
+		expr_mat <- SummarizedExperiment::assays( obj )[[expr_name]]
+		gene_names <- rownames(expr_mat)
 		if (!is.null(symbol_column)) {
-			gene_names <- SummarizedExperiment::rowData(SCE)[ , symbol_column]
+			gene_names <- SummarizedExperiment::rowData(obj)[ , symbol_column]
 		}
 	}
 	if (class(obj)[1] == "Seurat") {
-		exprmat <- Seurat::GetAssayData( obj, assay=expr_name, layer="data" )
-		gene_names <- rownames(exprmat)
+		expr_mat <- Seurat::GetAssayData( obj, assay=expr_name, layer="data" )
+		gene_names <- rownames(expr_mat)
 		if (!is.null(symbol_column)) {
 			gene_names <- symbol_column
 		}
 	}
 	if (class(obj)[1] == "dgCMatrix" | class(obj)[1] == "dgTMatrix" | class(obj) == "matrix") {
-		exprmat <- obj
-		gene_names <- rownames(exprmat)
+		expr_mat <- obj
+		gene_names <- rownames(expr_mat)
 		if (!is.null(symbol_column)) {
 			gene_names <- symbol_column
 		}
 	}
 	if (do.scale) {
-		exprmat <- t( apply(exprmat, 1, scale ) )
+		expr_mat <- t( apply(expr_mat, 1, scale ) )
 	}
 	if (sum(duplicated(gene_names)) > 0) {
 		exclude <- duplicated(gene_names)
-		exprmat <- exprmat[!exclude,]
+		expr_mat <- expr_mat[!exclude,]
 		gene_names <- gene_names[!exclude]
 		warn(paste("Excluding", sum(exclude), "duplicated genes."))
 	}
-	rownames(exprmat) <- gene_names
-	return(exprmat)
+	rownames(expr_mat) <- gene_names
+	return(expr_mat)
 }
 
 assignPhase <- function(expr_mat, CC_table, phase="G2M") {
@@ -47,13 +48,13 @@ assignPhase <- function(expr_mat, CC_table, phase="G2M") {
 	gene_names <- rownames(expr_mat)
 	signature <- signature[signature[,"Gene"] %in% gene_names,]
 	if (nrow(signature) < 5) {
-		stop("Error: fewer than 5 phase genes detected in SCE. Check gene names of the CC table match the gene names in the SCE.")
+		stop("Error: fewer than 5 phase genes detected in obj. Check gene names of the CC table match the gene names in the obj.")
 	}
 	matches <- base::match(signature[,"Gene"], gene_names)
 	expr_mat <- expr_mat[matches, ]
 	gene_names <- gene_names[matches]
 	keep <- !is.na(gene_names)
-	exprmat <- exprmat[keep,]
+	expr_mat <- expr_mat[keep,]
 	gene_names <- gene_names[keep]
 	signature <- signature[keep,]
 
@@ -76,8 +77,8 @@ classifyCells <- function(obj, CC_table, expr_name="logcounts", do.scale=FALSE, 
 
 	out_list <- list()
 	stages <- as.character(unique(CC_table[,"Stage"]))
-	phases <- matrix(nrow=ncol(SCE), ncol=length(stages));
-	scores <- matrix(nrow=ncol(SCE), ncol=length(stages));
+	phases <- matrix(nrow=ncol(obj), ncol=length(stages));
+	scores <- matrix(nrow=ncol(obj), ncol=length(stages));
 	expr_mat <- prepData(obj, do.scale=do.scale, expr_name=expr_name, symbol_column=symbol_column)
 
 	for (i in 1:length(stages)) {
@@ -104,8 +105,8 @@ classifyCells <- function(obj, CC_table, expr_name="logcounts", do.scale=FALSE, 
 	return(list(phase=best, scores=scores, fits=out_list))
 }
 
-regressCycleScater <- function(SCE, classification, expr_name="logcounts", method=c("scores", "phase")){
-	if (class(SCE)[1] != "SingleCellExperiment") {
+regressCycleScater <- function(obj, classification, expr_name="logcounts", method=c("scores", "phase")){
+	if (class(obj)[1] != "SingleCellExperiment") {
 		stop("Error: Requires SingleCellExperiment object as input")
 	}
 
@@ -116,8 +117,8 @@ regressCycleScater <- function(SCE, classification, expr_name="logcounts", metho
 	} else {
 		stop("Error: unrecognized method.")
 	}
-	SCE <- scater::normalizeExprs(SCE, design=design, return_norm_as_exprs=FALSE, exprs_values=expr_name)
-	return(SCE);
+	obj <- scater::normalizeExprs(obj, design=design, return_norm_as_exprs=FALSE, exprs_values=expr_name)
+	return(obj);
 }
 
 # regresses out the differences between only the specified cell cycle phases
