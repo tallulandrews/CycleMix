@@ -24,7 +24,7 @@ HGeneSets includes:
 
 	Quiesc combination of G0 genes from Reactome, and quiescence markers from Cheung et al. 2013
 
-	Seurat originates from v4 of the Seurat package.
+	Seurat originates from v4.4.0 of the Seurat package.
 
 MGeneSets includes:
 
