@@ -1,4 +1,4 @@
-assignPhase <- function(SCE, CC_table, phase="G2M", expr_name="logcounts", do.scale=FALSE, symbol_column="feature_symbol") {
+assignPhase <- function(expr_mat, CC_table, phase="G2M", expr_name="logcounts", do.scale=FALSE, symbol_column="feature_symbol") {
 	if (class(SCE)[1] != "SingleCellExperiment") {
 		stop("Error: Requires SingleCellExperiment object as input")
 	}
@@ -27,7 +27,7 @@ assignPhase <- function(SCE, CC_table, phase="G2M", expr_name="logcounts", do.sc
 		stop("Error: fewer than 5 phase genes detected in SCE. Check gene names of the CC table match the gene names in the SCE.")
 	}
 	matches <- base::match(signature[,"Gene"], gene_names)
-	exprmat <- exprmat[matches, ]
+	expr_mat <- expr_mat[matches, ]
 	gene_names <- gene_names[matches]
 	keep <- !is.na(gene_names)
 	exprmat <- exprmat[keep,]
@@ -35,13 +35,9 @@ assignPhase <- function(SCE, CC_table, phase="G2M", expr_name="logcounts", do.sc
 	signature <- signature[keep,]
 
 	# Cell-Scores
-	score <- Matrix::colSums(exprmat*signature[,"Dir"])/sum(abs(signature[,"Dir"]))
-	#pos_dir <- signature[,"Dir"]
-	#pos_dir[pos_dir < 0] <- 0
-	#pos_score <- Matrix::colSums(exprmat*pos_dir)/sum(pos_dir)
+	score <- Matrix::colSums(expr_mat*signature[,"Dir"])/sum(abs(signature[,"Dir"]))
 
 	# Fit Mixture Model
-	#require("mclust")
 	fit <- mclust::Mclust(score, G=1:3)
 	fit$phase <- as.character(fit$classification)
 	
@@ -50,7 +46,6 @@ assignPhase <- function(SCE, CC_table, phase="G2M", expr_name="logcounts", do.sc
 		fit$phase[fit$phase == tag] <- phase
 	}
 	fit$phase[fit$phase != phase] <- ""
-	#fit$pos_score <- pos_score
 	return(fit)
 }
 
@@ -64,6 +59,8 @@ classifyCells <- function(SCE, CC_table, expr_name="logcounts", do.scale=FALSE, 
 	stages <- as.character(unique(CC_table[,"Stage"]))
 	phases <- matrix(nrow=ncol(SCE), ncol=length(stages));
 	scores <- matrix(nrow=ncol(SCE), ncol=length(stages));
+	expr_mat <- prepData(obj, do.scale=do.scale, expr_name=expr_name, symbol_column=symbol_column)
+
 	for (i in 1:length(stages)) {
 		assignment <- assignPhase(SCE, CC_table, phase=stages[i], do.scale=do.scale, expr_name=expr_name, symbol_column = symbol_column)
 		out_list[[stages[i]]] <- assignment
