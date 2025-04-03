@@ -30,7 +30,7 @@ prepData <- function(obj, expr_name="logcounts", do.scale=FALSE, symbol_column="
 		exclude <- duplicated(gene_names)
 		expr_mat <- expr_mat[!exclude,]
 		gene_names <- gene_names[!exclude]
-		warn(paste("Excluding", sum(exclude), "duplicated genes."))
+		warning(paste("Excluding", sum(exclude), "duplicated genes."))
 	}
 	rownames(expr_mat) <- gene_names
 	return(expr_mat)
@@ -73,6 +73,7 @@ assignPhase <- function(expr_mat, CC_table, phase="G2M") {
 	return(fit)
 }
 
+# Seurat: obj, gene_table, expr_name="RNA", symbol_column=NULL
 classifyCells <- function(obj, CC_table, expr_name="logcounts", do.scale=FALSE, symbol_column="feature_symbol", allow.multi=FALSE) {
 
 	out_list <- list()
