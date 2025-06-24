@@ -47,7 +47,9 @@ has the highest signature.
 \examples{
 	expr_mat <- prepData(Ex) # Ex = SingleCellExperiment Object
 	fit <- assignPhase(expr_mat, MGeneSets$Cyclone, phase="G2M")
-	classification <- classifyCells(Ex,  MGeneSets$Cyclone, do.scale=TRUE, allow.multi=FALSE);
-	classification <- classifyCells(Ex,  MGeneSets$Cyclone, do.scale=FALSE, allow.multi=TRUE);
+
+	classification <- classifyCells(Ex,  MGeneSets$Cyclone, do.scale=TRUE, allow.multi=FALSE)
+
+	classification <- classifyCells(Ex,  MGeneSets$Cyclone, do.scale=FALSE, allow.multi=TRUE)
 }
 \keyword{cell cycle, mixture models}

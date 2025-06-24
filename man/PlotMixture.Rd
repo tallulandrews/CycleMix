@@ -22,7 +22,8 @@
 	fit <- assignPhase(Ex, MGeneSets$Cyclone, "G2M")
 	plotMixture(fit, BIC=TRUE)
 
-	classification <- classifyCells(Ex,  MGeneSets$Cyclone, do.scale=TRUE, allow.multi=FALSE);
+	classification <- classifyCells(Ex,  MGeneSets$Cyclone, do.scale=TRUE, allow.multi=FALSE)
+
 	plotMixture(classification$fits[[1]], BIC=FALSE)
 }
 \keyword{cell cycle, mixture model, plotting}

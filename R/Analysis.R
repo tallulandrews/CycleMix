@@ -106,21 +106,21 @@ classifyCells <- function(obj, CC_table, expr_name="logcounts", do.scale=FALSE, 
 	return(list(phase=best, scores=scores, fits=out_list))
 }
 
-regressCycleScater <- function(obj, classification, expr_name="logcounts", method=c("scores", "phase")){
-	if (class(obj)[1] != "SingleCellExperiment") {
-		stop("Error: Requires SingleCellExperiment object as input")
-	}
-
-	if (method[1] == "phase") {
-		design <- model.matrix(~classification$phase)
-	} else if (method[1] == "scores") {
-		design <- model.matrix(~classification$scores)
-	} else {
-		stop("Error: unrecognized method.")
-	}
-	obj <- scater::normalizeExprs(obj, design=design, return_norm_as_exprs=FALSE, exprs_values=expr_name)
-	return(obj);
-}
+#regressCycleScater <- function(obj, classification, expr_name="logcounts", method=c("scores", "phase")){
+#	if (class(obj)[1] != "SingleCellExperiment") {
+#		stop("Error: Requires SingleCellExperiment object as input")
+#	}
+#
+#	if (method[1] == "phase") {
+#		design <- model.matrix(~classification$phase)
+#	} else if (method[1] == "scores") {
+#		design <- model.matrix(~classification$scores)
+#	} else {
+#		stop("Error: unrecognized method.")
+#	}
+#	obj <- scater::normalizeExprs(obj, design=design, return_norm_as_exprs=FALSE, exprs_values=expr_name)
+#	return(obj);
+#}
 
 # regresses out the differences between only the specified cell cycle phases
 # first phase will be used as the reference phase for discrete regression
