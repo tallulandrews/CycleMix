@@ -9,4 +9,6 @@ Installation:
 >require("devtools")
 >install_github('tallulandrews/CycleMix')
 
-[test]
+Utilization:
+
+Please see vignette/ for step-by-step guide to use CycleMix.
