@@ -183,8 +183,9 @@ regressCyclePartial <- function(expr_mat, classification, type=c("counts","norm"
 	}
 
 	if (method == "scores") {
-		model <- stats::model.matrix(~classification)
-		corrected <- apply(expr_mat, 1, glm_continuous, phases, model, type, allow_negative)
+		to_regress <- classification[,colnames(classification) %in% phases]
+		model <- stats::model.matrix(~to_regress)
+		corrected <- apply(expr_mat, 1, glm_continuous,  model=model, type=type, allow_negative=allow_negative)
 	}
 	return(t(corrected));
 }
