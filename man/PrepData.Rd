@@ -5,7 +5,7 @@
 	Extract the normalized expression matrix from a variety of objects used in scRNAseq.
 }
 \usage{
-  prepData(obj, expr_name="logcounts", do.scale=FALSE, symbol_column="feature_symbol")
+  prepData(obj, expr_name="logcounts", do.scale=FALSE, symbol_column=NULL)
 }
 \arguments{
   \item{obj}{a SingleCellExperiment object or a Seurat object or a matrix/Matrix.}
@@ -22,5 +22,5 @@ symbol_column is either the column of the rowData (SingleCellExperiment) contain
 	a "matrix" or "Matrix" of the specified log-normalized expression values with the specified gene symbols as the rownames.
 }
 \examples{
-	expr_mat <- prepData(Ex) # Ex = SingleCellExperiment Object
+	expr_mat <- prepData(Ex, symbol_column="feature_symbol") # Ex = SingleCellExperiment Object
 }

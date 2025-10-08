@@ -90,7 +90,7 @@ We can now assign cell-cycle stages to our cells. For our example data we know a
 
 ## SingleCellExperiment Object
 ```{r}
-output <- classifyCells(Ex, MGeneSets$Cyclone) #### CAUSES ERROR!!!!
+output <- classifyCells(Ex, MGeneSets$Cyclone) 
 print(summary(factor(output$phase)))
 ```
 Our example data comes from staged cells so we can compare our assignments to the ground truth:
@@ -105,12 +105,30 @@ plotMixture(output$fit[["G2M"]], BIC=TRUE)
 ```
 The plot on the left shows the 6 different models considered : mixtures of 1-3 gaussian distributions with equal (E) or different (V) variances. The BIC criterion was used to select the optimal model. The plot on the right shows the distribution of expression scores across all cells. The curves of the fitted distributions are plotted on top. The threshold for assigning cells to the stage (if applicable) is indicated with the red dotted line.
 
-## Seurt Object
+## Seurat Object
+CycleMix is also compatible with Seurat(v5), and will automatically extract the appropriate data, but we must first identify the appropriat assay
+```{r}
+require(Seurat)
+require(SingleCellExperiment)
+seur_obj <- as.Seurat(Ex)
+names(seur_obj@assays)
+cc_genes <- MGeneSets$Cyclone
+cc_genes[,1] <- rownames(cc_genes) # use ensembl gene names
+output <- classifyCells(seur_obj, cc_genes, expr_name="originalexp", symbol_column=NULL)
+```
 
 ## matrix / Sparse Matrix
+Or for compatibility with other object types, one can run directly on a sparse matrix.
+```{r}
+sparse_mat <- logcounts(Ex)
+rownames(sparse_mat) <- rowData(Ex)[,1]
+output <- classifyCells(sparse_mat, MGeneSets$Cyclone, symbol_column=NULL)
+```
+
+# CellCycle Regression
 
 
-# Session information
+## Session information
 
 ```{r}
 sessionInfo()

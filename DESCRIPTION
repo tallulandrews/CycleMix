@@ -6,7 +6,7 @@ Author: Tallulah Andrews <tallulandrews@gmail.com>
 Maintainer: Tallulah Andrews <tallulandrews@gmail.com>
 Depends: R (>= 3.5.0)
 Imports: SingleCellExperiment, mclust, scater, SummarizedExperiment, matrixStats, MASS, Seurat, Matrix
-Suggests: knitr, biomaRt, rmarkdown, BiocStyle
+Suggests: knitr, rmarkdown, BiocStyle
 VignetteBuilder: knitr, BiocStyle, rmarkdown
 biocViews: RNASeq, Sequencing, Transcriptomics, GeneExpression, Software
 Collate: Ensembl_Stuff.R Analysis.R Plotting.R

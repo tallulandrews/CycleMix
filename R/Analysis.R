@@ -1,4 +1,4 @@
-prepData <- function(obj, expr_name="logcounts", do.scale=FALSE, symbol_column="feature_symbol") {
+prepData <- function(obj, expr_name="logcounts", do.scale=FALSE, symbol_column=NULL) {
 	gene_names <- rownames(obj)
 
 	expr_mat <- c()

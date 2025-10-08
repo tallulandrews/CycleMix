@@ -19,7 +19,9 @@
 	The input SingleCellExperiment object with the regressed expression saved to the 'norm_exprs' slot.
 }
 \examples{
-	fit <- assignPhase(Ex, MGeneSets$Cyclone, "G2M")
+	cc_genes <- MGeneSets$Cyclone
+	cc_genes$Gene <- rownames(cc_genes) # swap to Ensembl Genes
+	fit <- assignPhase(Ex@assays$data[["logcounts"]], cc_genes, "G2M")
 	plotMixture(fit, BIC=TRUE)
 
 	classification <- classifyCells(Ex,  MGeneSets$Cyclone, do.scale=TRUE, allow.multi=FALSE)
