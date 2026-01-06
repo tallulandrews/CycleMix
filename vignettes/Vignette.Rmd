@@ -46,17 +46,16 @@ You can use your own geneset simply by creating a data.frame of the same format:
 head(MGeneSets$Cyclone)
 ```
 
-The "Dir" column is used to weight the gene expression we have simplified this to positive (1) and negative (-1) markers, but any numeric value can be used, for instance fold change.
 
 We can convert human cell-cycle genes to mouse orthologs using biomaRt with our provided wrappers. For instance if we want to use the quiescence markers in mouse we would convert them as so:
 
 
-```{r}
-#require("biomaRt")
-#map <- downloadEnsemblData()
+```{r eval=FALSE}
+require("biomaRt") 
+map <- downloadEnsemblData()
 mouse_g0 <- HGeneSets$Quiesc
-#mouse_g0$Gene <- mapGeneNames(map, mouse_g0$Gene, in.name="symbol", in.org="Hsap", out.name="symbol", out.org="Mmus")
-#mouse_g0 <- mouse_g0[mouse_g0$Gene != "",]
+mouse_g0$Gene <- mapGeneNames(map, mouse_g0$Gene, in.name="symbol", in.org="Hsap", out.name="symbol", out.org="Mmus")
+mouse_g0 <- mouse_g0[mouse_g0$Gene != "",]
 ```
 
 Gene sets can also be combined together easily:
@@ -65,23 +64,50 @@ Gene sets can also be combined together easily:
 mouse_CC <- rbind(mouse_g0, MGeneSets$Cyclone)
 ```
 
-# Input Data
+# Input Data 
 
-CycleMix can use a SingleCellExperiment object, a Seurat object, or a matrix or sparse matrix as input. or this tutorial we have provided some example data already formatted correctly. You must normalize the expression data before using CycleMix, but any normalization will work - vst, sctransform, log-cpm, integrated counts etc....
+CycleMix requires a matrix or object containing single-cell or single-nucleus RNAseq data. Single-cell spatial transcriptomics data can also be used. As well as a table of marker genes for each cell state to classify cells into - we have provided tables for the cell-cycle phases in this package.
 
+CycleMix can use a SingleCellExperiment object, a Seurat object, or a matrix or sparse matrix as input. We have provided a SCE and Seurat object for this tutorial. Data must be normalized prior to using CycleMix, this can be accomplished using sctransform, vst, scran or any other normalization approach. Batch-effect corrected counts are also compatible with CycleMix.
+
+
+## SingleCellExperiment
 When using a SingleCellExperiment object, CycleMix will automatically look for a column called "feature_symbol" for the gene names that match those in the marker table.
 
 ```{r}
 head(rowData(Ex))
 ```
 
-
-You should also have a log-transformed normalized expression matrix in the SingleCellExperiment object, in our case this matrix is called "logcounts":
+You should also have a log-transformed normalized expression matrix in the SingleCellExperiment object, by default CycleMix uses the matrix named "logcounts", but any matrix can be specified.:
 
 ```{r}
 names(assays(Ex))
 ```
-ee the SingleCellExperiment or scater packages for details on creating and normalizing data in SingleCellExperiment objects.
+
+See the SingleCellExperiment, scater, or scran packages for details on creating and normalizing data in SingleCellExperiment objects.
+
+## Seurat Object
+CycleMix is compatible with Seurat(v5). When using CycleMix with multiple samples of scRNAseq data in Seurat, you must use `JoinLayers()` to merge the samples into a single assay matrix prior to using CycleMix.
+
+## Normalized / Batch Corrected expression matrix
+
+
+## Marker Matrix
+The marker matrix must have 3 columns: 
+- Gene : Gene names that match those in your matrix / object
+- Stage : Which cell-cycle stage or other cell-state the marker is associated with.
+- Dir : a quantitative score (typically 1/-1) indicating the strength and/or directions of the association. Positive values are genes upregulated in the stage, negative values are genes down regulated in the stage.
+
+```{r}
+head(MGeneSets$Cyclone)
+```
+The "Dir" column is used to weight the gene expression we have simplified this to positive (1) and negative (-1) markers, but any numeric value can be used, for instance fold change.
+
+We have provided tables with gene symbols for published cell-cycle marker gene sets. You can find the details for these gene sets using:
+
+```{r eval=FALSE}
+?HGeneSets
+```
 
 # Assigning Cells
 
