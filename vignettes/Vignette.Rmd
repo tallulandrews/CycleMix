@@ -57,7 +57,7 @@ sample1 <- Seurat::CreateSeuratObject(counts=Ex2.2$counts, meta.data=Ex2.2$meta)
 sample2 <- Seurat::CreateSeuratObject(counts=Ex2.2$counts, meta.data=Ex2.2$meta)
 all_data <- merge(sample1, sample2, add.cell.ids=c("sample1", "sample2"))
 
-all_data_joined <- Seurat::JoinLayers(all_data)
+all_data_joined <- SeuratObject::JoinLayers(all_data)
 all_data_joined <- Seurat::NormalizeData(all_data_joined)
 ```
 
@@ -70,7 +70,7 @@ all_data_sct <- Seurat::SCTransform(all_data)
 For maximum flexibility, CycleMix is also compatible with data provided as a matrix or Matrix from any type of normalization or batch effect correction. Here we will extract the Pearson residuals from sctransform as an example.
 
 ```{r}
-corrected_mat <- GetAssayData(all_data_sct, assay="SCT", layer="scale.data")
+corrected_mat <- Seurat::GetAssayData(all_data_sct, assay="SCT", layer="scale.data")
 ```
 
 ## Marker Matrix
@@ -134,15 +134,15 @@ CycleMix is also compatible with Seurat(v5), and will automatically extract the 
 require(Seurat)
 require(SingleCellExperiment)
 # Using joined samples:
-output1 <- classifyCells(all_data_joined, HGeneSets$Tirosh, expr_name="RNA")
+output1 <- CycleMix::classifyCells(all_data_joined, HGeneSets$Tirosh, expr_name="RNA")
 # Using SCT normalized samples:
-output2 <- classifyCells(all_data_sct, HGeneSets$Tirosh, expr_name="SCT")
+output2 <- CycleMix::classifyCells(all_data_sct, HGeneSets$Tirosh, expr_name="SCT")
 ```
 CycleMix automatically uses the "data" layer of the selected assay, if you wish to use the Pearson residuals from SCT instead you would extract the matrix and run like so:
 
 ```{r}
-corrected_mat <- GetAssayData(all_data_sct, assay="SCT", layer="scale.data")
-output3 <- classifyCells(corrected_mat, HGeneSets$Tirosh)
+corrected_mat <- Seurat::GetAssayData(all_data_sct, assay="SCT", layer="scale.data")
+output3 <- CycleMix::classifyCells(corrected_mat, HGeneSets$Tirosh)
 ```
 
 ## matrix / Sparse Matrix

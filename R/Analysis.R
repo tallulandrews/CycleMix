@@ -16,7 +16,7 @@ prepData <- function(obj, expr_name="logcounts", do.scale=FALSE, symbol_column=N
 			gene_names <- symbol_column
 		}
 	}
-	if (class(obj)[1] == "dgCMatrix" | class(obj)[1] == "dgTMatrix" | class(obj) == "matrix") {
+	if (class(obj)[1] == "dgCMatrix" | class(obj)[1] == "dgTMatrix" | class(obj)[1] == "matrix") {
 		expr_mat <- obj
 		gene_names <- rownames(expr_mat)
 		if (!is.null(symbol_column)) {
