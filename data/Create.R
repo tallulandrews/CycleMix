@@ -75,3 +75,43 @@
 #Ex <- Ex[keep1 | keep2,]
 #save(Ex, file="Ex.rda", compress="xz")
 #rm(list=ls())
+#
+# Droplet-based.
+#require(Seurat)
+#require(CycleMix)
+
+#test_Data1 <- readRDS("Wang_colon.rds")
+#test_Data2 <- readRDS("Wang_ileum.rds")
+
+## Ensure Seurat V5 objects
+#test_Data1 <- CreateSeuratObject(counts=test_Data1@assays$RNA@counts, meta.data=test_Data1@meta.data)
+#test_Data2 <- CreateSeuratObject(counts=test_Data2@assays$RNA@counts, meta.data=test_Data2@meta.data)
+
+
+## Simplify for storing in package.
+#gene_map <- downloadEnsemblData()
+
+
+#set.seed(3829)
+#downsample <- sample(1:dim(test_Data1)[2], size=1500)
+#tidy_Data1 <- list(counts=test_Data1@assays$RNA@layers$counts[,downsample], meta = test_Data1@meta.data[downsample,c("cell_type", "tissue")])
+#row_names <- mapGeneNames(gene_map, rownames(test_Data1@assays$RNA), in.org="Hsap", out.org="Hsap", in.name="ensg", out.name="symbol")
+#rownames(tidy_Data1$counts) <- row_names
+#keep_genes1 <-  row_names[rowSums(tidy_Data1$counts > 0) > 100 & row_names != ""]
+
+#downsample <- sample(1:dim(test_Data2)[2], size=1500)
+#tidy_Data2 <- list(counts=test_Data2@assays$RNA@layers$counts[,downsample], meta = test_Data2@meta.data[downsample,c("cell_type", "tissue")])
+#row_names <- mapGeneNames(gene_map, rownames(test_Data2@assays$RNA), in.org="Hsap", out.org="Hsap", in.name="ensg", out.name="symbol")
+#rownames(tidy_Data2$counts) <- row_names
+#keep_genes2 <-  row_names[rowSums(tidy_Data2$counts > 0) > 100 & row_names != ""]
+
+#keep_genes <- intersect( keep_genes1, keep_genes2 )
+#tidy_Data1$counts <- tidy_Data1$counts[keep_genes,]
+#tidy_Data2$counts <- tidy_Data2$counts[keep_genes,]
+
+#Ex2.1 <- tidy_Data1
+#Ex2.2 <- tidy_Data2
+
+#save(Ex2.1, file="Wang_colon.rda")
+#save(Ex2.2, file="Wang_ileum.rda")
+

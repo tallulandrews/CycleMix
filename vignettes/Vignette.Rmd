@@ -28,42 +28,6 @@ Droplet-based single-cell RNA sequencing (scRNAseq) enables the assaying of tens
 
 This package implements a method for robustly classifying single cells by their cell-cycle phase and flexibly regressing out the transcriptional differences between any combination of phases specified by the user. This enables both complete regression of transcriptional differences related to the cell-cycle or simply regressing out differences between different phases of the cellcycle while preserving differences between proliferating and non-proliferating cells.
 
-
-# Genesets
-
-This package provides some published cell-cycle marker gene sets for human (HGeneSets) and mouse (MGeneSets).
-```{r}
-names(HGeneSets)
-```
-
-Sources of the gene sets can be found in the help manual, i.e.
-```{r eval=FALSE}
-?HGeneSets
-```
-You can use your own geneset simply by creating a data.frame of the same format:
-
-```{r echo=FALSE}
-head(MGeneSets$Cyclone)
-```
-
-
-We can convert human cell-cycle genes to mouse orthologs using biomaRt with our provided wrappers. For instance if we want to use the quiescence markers in mouse we would convert them as so:
-
-
-```{r eval=FALSE}
-require("biomaRt") 
-map <- downloadEnsemblData()
-mouse_g0 <- HGeneSets$Quiesc
-mouse_g0$Gene <- mapGeneNames(map, mouse_g0$Gene, in.name="symbol", in.org="Hsap", out.name="symbol", out.org="Mmus")
-mouse_g0 <- mouse_g0[mouse_g0$Gene != "",]
-```
-
-Gene sets can also be combined together easily:
-
-```{r}
-mouse_CC <- rbind(mouse_g0, MGeneSets$Cyclone)
-```
-
 # Input Data 
 
 CycleMix requires a matrix or object containing single-cell or single-nucleus RNAseq data. Single-cell spatial transcriptomics data can also be used. As well as a table of marker genes for each cell state to classify cells into - we have provided tables for the cell-cycle phases in this package.
@@ -87,16 +51,33 @@ names(assays(Ex))
 See the SingleCellExperiment, scater, or scran packages for details on creating and normalizing data in SingleCellExperiment objects.
 
 ## Seurat Object
-CycleMix is compatible with Seurat(v5). When using CycleMix with multiple samples of scRNAseq data in Seurat, you must use `JoinLayers()` to merge the samples into a single assay matrix prior to using CycleMix.
+CycleMix is compatible with Seurat(v5). When using CycleMix with multiple samples of scRNAseq data in Seurat, you must use `JoinLayers()` to merge the samples into a single assay matrix prior to using CycleMix. 
+```{r}
+sample1 <- Seurat::CreateSeuratObject(counts=Ex2.2$counts, meta.data=Ex2.2$meta)
+sample2 <- Seurat::CreateSeuratObject(counts=Ex2.2$counts, meta.data=Ex2.2$meta)
+all_data <- merge(sample1, sample2, add.cell.ids=c("sample1", "sample2"))
+
+all_data_joined <- Seurat::JoinLayers(all_data)
+all_data_joined <- Seurat::NormalizeData(all_data_joined)
+```
+
+Alternatively, using SCTransform on the entire object will automatically join the layers together.
+```{r}
+all_data_sct <- Seurat::SCTransform(all_data)
+```
 
 ## Normalized / Batch Corrected expression matrix
+For maximum flexibility, CycleMix is also compatible with data provided as a matrix or Matrix from any type of normalization or batch effect correction. Here we will extract the Pearson residuals from sctransform as an example.
 
+```{r}
+corrected_mat <- GetAssayData(all_data_sct, assay="SCT", layer="scale.data")
+```
 
 ## Marker Matrix
 The marker matrix must have 3 columns: 
 - Gene : Gene names that match those in your matrix / object
 - Stage : Which cell-cycle stage or other cell-state the marker is associated with.
-- Dir : a quantitative score (typically 1/-1) indicating the strength and/or directions of the association. Positive values are genes upregulated in the stage, negative values are genes down regulated in the stage.
+- Dir : a quantitative score indicating the strength and/or directions of the association. Positive values are genes upregulated in the stage, negative values are genes down regulated in the stage.
 
 ```{r}
 head(MGeneSets$Cyclone)
@@ -107,6 +88,22 @@ We have provided tables with gene symbols for published cell-cycle marker gene s
 
 ```{r eval=FALSE}
 ?HGeneSets
+```
+### Converting & Combining GeneSets
+We can convert human cell-cycle genes to mouse orthologs using biomaRt with our provided wrappers. For instance if we want to use the quiescence markers in mouse we would convert them as so:
+
+```{r eval=FALSE}
+require("biomaRt") 
+map <- downloadEnsemblData()
+mouse_g0 <- HGeneSets$Quiesc
+mouse_g0$Gene <- mapGeneNames(map, mouse_g0$Gene, in.name="symbol", in.org="Hsap", out.name="symbol", out.org="Mmus")
+mouse_g0 <- mouse_g0[mouse_g0$Gene != "",]
+```
+
+Gene sets can also be combined together easily:
+
+```{r, eval=FALSE}
+mouse_CC <- rbind(mouse_g0, MGeneSets$Cyclone)
 ```
 
 # Assigning Cells
