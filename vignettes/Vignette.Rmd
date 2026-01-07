@@ -94,9 +94,9 @@ We can convert human cell-cycle genes to mouse orthologs using biomaRt with our 
 
 ```{r eval=FALSE}
 require("biomaRt") 
-map <- downloadEnsemblData()
+map <- CycleMix::downloadEnsemblData()
 mouse_g0 <- HGeneSets$Quiesc
-mouse_g0$Gene <- mapGeneNames(map, mouse_g0$Gene, in.name="symbol", in.org="Hsap", out.name="symbol", out.org="Mmus")
+mouse_g0$Gene <- CycleMix::mapGeneNames(map, mouse_g0$Gene, in.name="symbol", in.org="Hsap", out.name="symbol", out.org="Mmus")
 mouse_g0 <- mouse_g0[mouse_g0$Gene != "",]
 ```
 
@@ -113,7 +113,7 @@ We can now assign cell-cycle stages to our cells. For our example data we know a
 
 ## SingleCellExperiment Object
 ```{r}
-output <- classifyCells(Ex, MGeneSets$Cyclone) 
+output <- CycleMix::classifyCells(Ex, MGeneSets$Cyclone, symbol_column="feature_symbol") 
 print(summary(factor(output$phase)))
 ```
 Our example data comes from staged cells so we can compare our assignments to the ground truth:
@@ -133,15 +133,20 @@ CycleMix is also compatible with Seurat(v5), and will automatically extract the 
 ```{r}
 require(Seurat)
 require(SingleCellExperiment)
-seur_obj <- as.Seurat(Ex)
-names(seur_obj@assays)
-cc_genes <- MGeneSets$Cyclone
-cc_genes[,1] <- rownames(cc_genes) # use ensembl gene names
-output <- classifyCells(seur_obj, cc_genes, expr_name="originalexp", symbol_column=NULL)
+# Using joined samples:
+output1 <- classifyCells(all_data_joined, HGeneSets$Tirosh, expr_name="RNA")
+# Using SCT normalized samples:
+output2 <- classifyCells(all_data_sct, HGeneSets$Tirosh, expr_name="SCT")
+```
+CycleMix automatically uses the "data" layer of the selected assay, if you wish to use the Pearson residuals from SCT instead you would extract the matrix and run like so:
+
+```{r}
+corrected_mat <- GetAssayData(all_data_sct, assay="SCT", layer="scale.data")
+output3 <- classifyCells(corrected_mat, HGeneSets$Tirosh)
 ```
 
 ## matrix / Sparse Matrix
-Or for compatibility with other object types, one can run directly on a sparse matrix.
+For compatibility with other object types, one can run directly on a sparse matrix, note that the matrix should be fully normalized, and batch-effect corrected (if applicable) prior to running CycleMix.
 ```{r}
 sparse_mat <- logcounts(Ex)
 rownames(sparse_mat) <- rowData(Ex)[,1]
