@@ -7,7 +7,7 @@ getEnsemblArchive <- function() {
 	return(tab[,"url"])	
 }
 
-downloadEnsemblData <- function(host="www.ensembl.org") {
+downloadEnsemblData <- function(host="https://www.ensembl.org", protein_coding_only=FALSE) {
 	requireNamespace("biomaRt")
 	archive <- getEnsemblArchive();
 	biomart_mart <- "ENSEMBL_MART_ENSEMBL"
@@ -35,10 +35,29 @@ downloadEnsemblData <- function(host="www.ensembl.org") {
 		message(cond)
 		return(biomaRt::useMart(biomart=biomart_mart, dataset="mmusculus_gene_ensembl", host=host[1]))
 	})
+	if (protein_coding_only) {
+		ensg_name_map <- biomaRt::getBM(attributes=c("ensembl_gene_id","hgnc_symbol"), filters = "biotype", values="protein_coding", mart=hensembl)
+		ensg2musg <- biomaRt::getBM(attributes=c("ensembl_gene_id","mmusculus_homolog_ensembl_gene"),filters = "biotype", values="protein_coding", mart=hensembl)
+		musg_name_map <- biomaRt::getBM(attributes=c("ensembl_gene_id","mgi_symbol"), filters = "biotype", values="protein_coding", mart=mensembl)
+	} else {
+		ensg_name_map <- biomaRt::getBM(attributes=c("ensembl_gene_id","hgnc_symbol"), mart=hensembl)
+		ensg2musg <- biomaRt::getBM(attributes=c("ensembl_gene_id","mmusculus_homolog_ensembl_gene"), mart=hensembl)
+		musg_name_map <- biomaRt::getBM(attributes=c("ensembl_gene_id","mgi_symbol"), mart=mensembl)
+	}
+	# Priotize multi-mapping orthologs to those we care about:
 
-	ensg_name_map <- biomaRt::getBM(attributes=c("ensembl_gene_id","hgnc_symbol"), filters = "biotype", values="protein_coding", mart=hensembl)
-	ensg2musg <- biomaRt::getBM(attributes=c("ensembl_gene_id","mmusculus_homolog_ensembl_gene"),filters = "biotype", values="protein_coding", mart=hensembl)
-	musg_name_map <- biomaRt::getBM(attributes=c("ensembl_gene_id","mgi_symbol"), filters = "biotype", values="protein_coding", mart=mensembl)
+	h_has_symbol <- ensg_name_map[ensg_name_map[,2]!="",1]
+	m_has_symbol <- musg_name_map[musg_name_map[,2]!="",1]
+
+	# are CC genes
+	all_hgenes <- c(as.character(HGeneSets$Whitfield$Gene), as.character(HGeneSets$Macosko$Gene), as.character(HGeneSets$Seurat$Gene), as.character(HGeneSets$Tirosh$Gene), as.character(HGeneSets$Quiesc$Gene))
+	all_mgenes <- MGeneSets$Cyclone$Gene
+	h_is_CC <-  ensg_name_map[ensg_name_map[,2]%in% all_hgenes,1]
+	m_is_CC <-  musg_name_map[musg_name_map[,2]%in% all_mgenes,1]
+
+	score <- as.numeric(ensg2musg[,1] %in% h_has_symbol) + as.numeric(ensg2musg[,2] %in% m_has_symbol) + as.numeric(ensg2musg[,1] %in% h_is_CC) + as.numeric(ensg2musg[,2] %in% m_is_CC)
+
+	ensg2musg <- ensg2musg[order( score, decreasing=TRUE),]
 	return(list(Hname=ensg_name_map, Orth=ensg2musg, Mname=musg_name_map))
 }
 
@@ -66,7 +85,7 @@ map_symbol_ensg <- function(maps, genes, is.org=c("Hsap","Mmus"), is.name=c("sym
 	return(new);
 }
 
-map_Hsap_Mmus_one2one <- function(maps, genes, is.org=c("Hsap","Mmus")) {
+map_Hsap_Mmus <- function(maps, genes, is.org=c("Hsap","Mmus")) {
 	if (is.org[1] == "Hsap") {
 		new = as.character(maps$Orth[match(genes, maps$Orth[,1]),2])
 	} else if (is.org[1] == "Mmus") {
@@ -96,7 +115,7 @@ mapGeneNames<- function(maps, genes, in.org=c("Hsap","Mmus"), in.name=c("symbol"
 			tmp <- genes
 		}
 		# change organism
-		tmp <- map_Hsap_Mmus_one2one(maps, tmp, is.org=in.org)
+		tmp <- map_Hsap_Mmus(maps, tmp, is.org=in.org)
 
 		# to symbol if necessary
 		if (out.name =="symbol") {
