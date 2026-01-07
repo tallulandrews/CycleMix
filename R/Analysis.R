@@ -74,7 +74,7 @@ assignPhase <- function(expr_mat, CC_table, phase="G2M") {
 }
 
 # Seurat: obj, gene_table, expr_name="RNA", symbol_column=NULL
-classifyCells <- function(obj, CC_table, expr_name="logcounts", do.scale=FALSE, symbol_column="feature_symbol", allow.multi=FALSE) {
+classifyCells <- function(obj, CC_table, expr_name="logcounts", do.scale=FALSE, symbol_column=NULL, allow.multi=FALSE) {
 
 	out_list <- list()
 	stages <- as.character(unique(CC_table[,"Stage"]))
