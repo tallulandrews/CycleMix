@@ -36,7 +36,7 @@ CycleMix can use a SingleCellExperiment object, a Seurat object, or a matrix or 
 
 
 ## SingleCellExperiment
-When using a SingleCellExperiment object, CycleMix will automatically look for a column called "feature_symbol" for the gene names that match those in the marker table.
+When using a SingleCellExperiment object, CycleMix will look for a column in the rowData of the object for the names of the genes. Here we have a column called "feature_symbol" to use.
 
 ```{r}
 head(rowData(Ex))
@@ -144,6 +144,20 @@ CycleMix automatically uses the "data" layer of the selected assay, if you wish 
 corrected_mat <- Seurat::GetAssayData(all_data_sct, assay="SCT", layer="scale.data")
 output3 <- CycleMix::classifyCells(corrected_mat, HGeneSets$Tirosh)
 ```
+Very similar classifications are obtained from regardless of which of these options we use for this dataset:
+
+```{r}
+table(output1$phase, output2$phase)
+table(output2$phase, output3$phase)
+```
+
+We can then add the phase information to the Seurat Object.
+
+```{r}
+all_data_sct@meta.data$Phase <- output2$phase
+all_data_sct@meta.data$G1S_score <- output2$scores[,"G1S"]
+all_data_sct@meta.data$G2M_score <- output2$scores[,"G2M"]
+```
 
 ## matrix / Sparse Matrix
 For compatibility with other object types, one can run directly on a sparse matrix, note that the matrix should be fully normalized, and batch-effect corrected (if applicable) prior to running CycleMix.
@@ -154,7 +168,60 @@ output <- classifyCells(sparse_mat, MGeneSets$Cyclone, symbol_column=NULL)
 ```
 
 # CellCycle Regression
+Once we have classified cells by cell-cycle phase, we can correct the expression matrix to remove differences between any set of phases. In many cases, we would like to remove differences between G1S and G2M cells without removing differences between cycling and non-cycling cells because a specific cell-type of interest are those that are cycling. This can be done as below.
 
+To correct the expression matrix, we must provide the specific matrix we would like corrected, the output from assigning phases above, as well as whether to regress using discrete phase labels or to regress the quantitative scores. 
+
+We provide many parameters to adjust this correction for each type of expression values. For batch-effect corrected or other regression residuals (such as the Pearson residuals from sctransform) we need to specify both that these are normalized values, so our corrected values do not need to be integers, and that the expression values are allowed to be negative.
+
+```{r}
+orig_pearson <- Seurat::GetAssayData(all_data_sct, assay="SCT", layer="scale.data")
+corrected_pearson <- regressCyclePartial(orig_pearson, output3, method="phase", phases=c("G1S", "G2M"), allow_negative=TRUE, type="norm") # correct G2M to match G1S cells
+```
+For phase-based regression, the first specified phase is treated as the reference state and each other phase is regressed to match that one. Thus, in this case we only partially regress the cell-cycle so only the cells assigned to G2M have been corrected to match the G1S cells, but both remain distinct from non-cycling cells.
+
+```{r}
+G2M_cells <- which(output3$phase == "G2M")
+G1S_cells <- which(output3$phase == "G1S")
+data.frame(original=orig_pearson[1:5,G2M_cells[1]], corrected=corrected_pearson[1:5,G2M_cells[1]])
+data.frame(original=orig_pearson[1:5,G1S_cells[1]], not_corrected=corrected_pearson[1:5,G1S_cells[1]])
+```
+The corrected values can then be added to our Seurat Object as a new assay, or by replacing the existing pearson residuals:
+
+```{r}
+all_data_sct@assays$CC_corrected <- CreateAssayObject(data=corrected_pearson) # create a new assay 
+all_data_sct@assays$SCT$scale.data <- corrected_pearson # replace the existing pearson residuals
+```
+
+If we were instead using log-normalized expression values, we would specify that they are normalized but that the regressed values should not be negative:
+
+```{r}
+lognorm_values <- assay(Ex, "logcounts")
+corrected_lognorm <- regressCyclePartial(lognorm_values, output, method="phase", phases=c("S","G2M"), allow_negative=FALSE, type="norm") # Remove differences between S and G2M stages.
+```
+
+We can also correct raw counts by using a negative binomial regression model rather than a Gaussian regression model.
+```{r}
+counts_values <- assay(Ex, "counts")
+corrected_counts <- regressCyclePartial(lognorm_values, output, method="phase", phases=c("S","G2M"), allow_negative=FALSE, type="counts") # Remove differences between S and G2M stages.
+G2M_cells <- which(output$phase=="G2M")
+data.frame(original=counts_values[1:5,G2M_cells[1]], corrected=corrected_counts[1:5,G2M_cells[1]])
+```
+
+For very large datasets, the regression model can be estimated from a subset of cells, then applied to all cells.
+```{r}
+corrected_pearson <- regressCyclePartial(orig_pearson, output3, method="phase", phases=c("G1S", "G2M"), allow_negative=TRUE, type="norm", subsample_cells = 1000) # randomly subsample 1000 cells to fit the regression model to.
+````
+
+## Score-based regression
+For score-based regression, cells are regressed to the reference state of for the specified score, so one could regress out only the G2M score and leave G1S or regress out both G2M and G1S scores. However, generally G1S and G2M scores are correlated with each other so this approach is much more likely to remove other effects correlated with cellular proliferation than the phase-based regression.
+
+```{r}
+corrected_pearson <- regressCyclePartial(orig_pearson, output3, method="scores", phases=c("G2M"), allow_negative=TRUE, type="norm") # Regress out only the G2M score
+corrected_pearson <- regressCyclePartial(orig_pearson, output3, method="scores", phases=c("G1S","G2M"), allow_negative=TRUE, type="norm") # Regress out both G1S and G2M score
+````
+
+Note that even non-proliferating cells are unlikely to have a G1S/G2M score of perfectly 0, so this regression method will alter the expression values of all cells in the dataset.
 
 ## Session information
 
