@@ -210,8 +210,8 @@ data.frame(original=counts_values[1:5,G2M_cells[1]], corrected=corrected_counts[
 
 For very large datasets, the regression model can be estimated from a subset of cells, then applied to all cells.
 ```{r}
-corrected_pearson <- regressCyclePartial(orig_pearson, output3, method="phase", phases=c("G1S", "G2M"), allow_negative=TRUE, type="norm", subsample_cells = 1000) # randomly subsample 1000 cells to fit the regression model to.
-````
+corrected_pearson <- regressCyclePartial(orig_pearson, output3, method="phase", phases=c("G1S", "G2M"), allow_negative=TRUE, type="norm", subsample_cells = 1000) # randomly subsample 1000 cells to fit the regression model
+```
 
 ## Score-based regression
 For score-based regression, cells are regressed to the reference state of for the specified score, so one could regress out only the G2M score and leave G1S or regress out both G2M and G1S scores. However, generally G1S and G2M scores are correlated with each other so this approach is much more likely to remove other effects correlated with cellular proliferation than the phase-based regression.
@@ -219,7 +219,7 @@ For score-based regression, cells are regressed to the reference state of for th
 ```{r}
 corrected_pearson <- regressCyclePartial(orig_pearson, output3, method="scores", phases=c("G2M"), allow_negative=TRUE, type="norm") # Regress out only the G2M score
 corrected_pearson <- regressCyclePartial(orig_pearson, output3, method="scores", phases=c("G1S","G2M"), allow_negative=TRUE, type="norm") # Regress out both G1S and G2M score
-````
+```
 
 Note that even non-proliferating cells are unlikely to have a G1S/G2M score of perfectly 0, so this regression method will alter the expression values of all cells in the dataset.
 
