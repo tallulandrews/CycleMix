@@ -45,7 +45,7 @@ has the highest signature.
 	"fits" : a list of output from assignPhase.
 }
 \examples{
-	expr_mat <- prepData(Ex) # Ex = SingleCellExperiment Object
+	expr_mat <- prepData(Ex, symbol_column="feature_symbol") # Ex = SingleCellExperiment Object
 	fit <- assignPhase(expr_mat, MGeneSets$Cyclone, phase="G2M")
 
 	classification <- classifyCells(Ex,  MGeneSets$Cyclone, do.scale=TRUE, allow.multi=FALSE, symbol_column="feature_symbol")

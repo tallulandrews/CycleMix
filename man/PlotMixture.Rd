@@ -8,7 +8,7 @@
   plotMixture(fit, BIC=FALSE)
 }
 \arguments{
-  \item{fit}{output from \code{assignPhase}}
+  \item{fit}{output from \code{assignPhase} or the "fits" slot from the output from classifyCells}
   \item{BIC}{whether to also plot the BICs for all the models considered.}
 }
 \details{
@@ -19,12 +19,10 @@
 	The input SingleCellExperiment object with the regressed expression saved to the 'norm_exprs' slot.
 }
 \examples{
-	cc_genes <- MGeneSets$Cyclone
-	cc_genes$Gene <- rownames(cc_genes) # swap to Ensembl Genes
-	fit <- assignPhase(Ex@assays$data[["logcounts"]], cc_genes, "G2M")
+	fit <- assignPhase(Ex2.2$counts, HGeneSets$Tirosh, "G2M")
 	plotMixture(fit, BIC=TRUE)
 
-	classification <- classifyCells(Ex,  MGeneSets$Cyclone, do.scale=TRUE, allow.multi=FALSE)
+	classification <- classifyCells(Ex,  MGeneSets$Cyclone, do.scale=TRUE, allow.multi=FALSE, symbol_column="feature_symbol")
 
 	plotMixture(classification$fits[[1]], BIC=FALSE)
 }

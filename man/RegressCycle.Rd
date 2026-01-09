@@ -14,6 +14,7 @@ Uses a GLM to remove differences between specified cell-cycle phases.
   \item{method}{which factor to regress on.}
   \item{phases}{which phases to regress out.}
   \item{allow_negative}{whether or not to allow corrected expression values to be negative.}
+  \item{subsample_cells}{how many cells to randomly subsample to use for fitting the regression model}
 }
 \details{
 	\code{regressCyclePartial} Creates a design matrix based on either the phase-signatures ("scores") or the

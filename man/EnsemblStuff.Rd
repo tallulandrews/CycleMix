@@ -6,7 +6,7 @@
 Mapping human and mouse genes to HGNC or MGI gene symbols or across species.
 }
 \usage{
-  downloadEnsemblData(host="http://www.ensembl.org", protein_coding_only=FALSE)
+  downloadEnsemblData(host="https://www.ensembl.org", protein_coding_only=FALSE)
   mapGeneNames(maps, genes, in.org=c("Hsap","Mmus"), in.name=c("symbol","ensg"), out.org=c("Hsap","Mmus"), out.name=c("symbol","ensg"))
 }
 \arguments{
