@@ -27,10 +27,11 @@ Mapping human and mouse genes to HGNC or MGI gene symbols or across species.
 	The input SingleCellExperiment object with the regressed expression saved to the 'norm_exprs' slot.
 }
 \examples{
-	maps <- downloadEnsemblData();
+	# This is commented out due to instability of ensembl biomaRt
+	#maps <- downloadEnsemblData();
 
 	# Convert Whitfield CC table for use in mouse
-	MGeneSets$Whitfield <- HGeneSets$Whitfield
-	MGeneSets$Whitfield$Gene <- mapGeneNames(maps, as.character(MGeneSets$Whitfield$Gene), in.org="Hsap", in.name="symbol", out.org="Mmus", out.name="symbol")
-	MGeneSets$Whitfield <- MGeneSets$Whitfield[MGeneSets$Whitfield$Gene != "",] #remove genes without orthologs.
+	#MGeneSets$Whitfield <- HGeneSets$Whitfield
+	#MGeneSets$Whitfield$Gene <- mapGeneNames(maps, as.character(MGeneSets$Whitfield$Gene), in.org="Hsap", in.name="symbol", out.org="Mmus", out.name="symbol")
+	#MGeneSets$Whitfield <- MGeneSets$Whitfield[MGeneSets$Whitfield$Gene != "",] #remove genes without orthologs.
 }

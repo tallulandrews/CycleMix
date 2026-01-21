@@ -1,11 +1,11 @@
 Package: CycleMix
-Version: 0.01.00
+Version: 0.99.00
 Date: 2018-04-16
 Title: Cell-Cycle using Mixture Models
 Author: Tallulah Andrews <tallulandrews@gmail.com>
 Maintainer: Tallulah Andrews <tallulandrews@gmail.com>
 Depends: R (>= 3.5.0)
-Imports: mclust, scater, SummarizedExperiment, matrixStats, MASS, Seurat, Matrix, biomaRt
+Imports: mclust, scater, SummarizedExperiment, matrixStats, MASS, Seurat, Matrix, biomaRt, SeuratObject
 Suggests: knitr, rmarkdown, BiocStyle, SingleCellExperiment
 VignetteBuilder: knitr, BiocStyle, rmarkdown
 biocViews: RNASeq, Sequencing, Transcriptomics, GeneExpression, Software

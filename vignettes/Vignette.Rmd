@@ -93,6 +93,7 @@ We have provided tables with gene symbols for published cell-cycle marker gene s
 We can convert human cell-cycle genes to mouse orthologs using biomaRt with our provided wrappers. For instance if we want to use the quiescence markers in mouse we would convert them as so:
 
 ```{r eval=FALSE}
+# Not run due to instability of biomaRt and requirement for internet
 require("biomaRt") 
 map <- CycleMix::downloadEnsemblData()
 mouse_g0 <- HGeneSets$Quiesc
