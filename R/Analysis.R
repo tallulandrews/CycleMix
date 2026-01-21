@@ -170,7 +170,7 @@ regressCyclePartial <- function(expr_mat, classification, type=c("counts","norm"
 				cells <- c(cells, sample(colnames(expr_mat)[! colnames(expr_mat) %in% cells], size=subsample_cells-length(cells)))
 			}
 		} else {
-			cells = colnames(expr_mat)
+			cells <- colnames(expr_mat)
 		}
 
 
@@ -198,11 +198,22 @@ glm_discrete <- function(x, phases, model, type=c("counts", "norm"), allow_negat
 		x2 <- x
 		model2 <- model
 	}
+
+	skip <- function(x) {
+		print("Warning: model failed to fit some genes, they will not be corrected.");
+		return(x)}
 	if (var(x2) == 0) {return(x)}
+	if (sum(x2 > 0) < 5) {return(x)} 
 
 
 	if (type[1] == "counts") {
-		res <- MASS::glm.nb(x2~model2)
+		res <- tryCatch(MASS::glm.nb(x2~model2),
+			warning = function(w){skip(x)},
+			error = function(e){skip(x)})
+		if(class(res)[1]== "numeric") {
+			return(res)
+		}
+		
 	} else if (type[1] == "norm") {
 		res <- glm(x2~model2)
 	}
@@ -227,9 +238,18 @@ glm_discrete <- function(x, phases, model, type=c("counts", "norm"), allow_negat
 }
 
 glm_continuous <- function(x, model,  type=c("counts", "norm"), allow_negative=FALSE) {
+	skip <- function(x) {
+		print("Warning: model failed to fit some genes, they will not be corrected.");
+		return(x)
+	}
 	if (var(x) == 0) {return(x)}
-	        if (type[1] == "counts") {
-                res <- MASS::glm.nb(x~model)
+	if (type[1] == "counts") {
+		res <- tryCatch(MASS::glm.nb(x~model),
+			warning = function(w){skip(x)},
+			error = function(e){skip(x)})
+		if(class(res)[1]== "numeric") {
+			return(res)
+		}
         } else if (type[1] == "norm") {
                 res <- glm(x~model)
         }
