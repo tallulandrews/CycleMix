@@ -7,8 +7,10 @@ Each stage is assigned independently using a gaussian mixture-model and cells ca
 
 ## Installation:
 
+```r
 require("remotes")
 install_github('tallulandrews/CycleMix')
+```
 
 ## Utilization:
 
