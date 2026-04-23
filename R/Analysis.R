@@ -103,8 +103,68 @@ classifyCells <- function(obj, CC_table, expr_name="logcounts", do.scale=FALSE, 
 	best[best==""] <- "None"
 	scores <- as.matrix(scores)
 	colnames(scores) <- stages
+
 	return(list(phase=best, scores=scores, fits=out_list))
 }
+
+# Uses knn to smooth out phase assignments to make it less conservative
+# dims = lower dimensional space rows = cells, columns = dimensions, must be in same order as cells in classification
+knnSmooth <- function(classification, dims=NULL, clusters=NULL, k=20) {
+	if (is.null(dims) & is.null(clusters)) {
+		stop("Error: either dims or clusters are required for smoothing phase assignments")
+	}
+
+	if (!is.null(clusters)) {
+		tab <- table(clusters, classification$phase)	
+		cluster_phase <- apply(tab, 1, function(x){tmp <- colnames(tab)[which(x==max(x))]; return(tmp[1])})
+		for(i in 1:length(cluster_phase)) {
+			classification$phase[clusters == names(cluster_phase)[i]] <- cluster_phase[i]
+		}
+		return(classification)
+	}
+
+	# KNN Smoothing
+	n.trees = 50;
+	search.k = -1
+	# Annoy kNN
+	f <- ncol(x = dims)
+	# Build Annoy Index
+	annoy_index <- new(Class = RcppAnnoy::AnnoyEuclidean, f)
+	for (ii in seq(nrow(x = dims))) {
+		annoy_index$addItem(ii - 1, dims[ii, ])
+	}
+	# Find NNs
+	annoy_index$build(n.trees)
+	n <- nrow(x = dims)
+	idx <- matrix(nrow = n,  ncol = k)
+	convert <- methods::is(annoy_index, "Rcpp_AnnoyAngular")
+	if (!inherits(x = future::plan(), what = "multicore")) {
+		oplan <- future::plan(strategy = "sequential")
+		on.exit(future::plan(oplan), add = TRUE)
+	}
+
+	res <- future.apply::future_lapply(X = 1:n, FUN = function(x) {
+		res <- annoy_index$getNNsByVectorList(dims[x, ], k, search.k, FALSE)
+  	})
+	for (i in 1:n) {
+		idx[i, ] <- res[[i]][[1]]
+	}
+	knns <- idx
+	
+	# First smooth those not assigned to any cell-cycle phase
+	smooth_first <- which(classification$phase == "None")
+	knns_neigh <- apply(knns, 1, function(x){unlist(classification$phase[x+1])})
+	n_votes <- apply(knns_neigh, 2, function(x) {tab <- table(x)/n; names(sort(tab, decreasing=TRUE))[1]})
+	classification$phase[[smooth_first]] <- n_votes[[smooth_first]]
+	
+	# Then smooth again
+	knns_neigh <- apply(knns, 1, function(x){unlist(classification$phase[x+1])})
+	n_votes <- apply(knns_neigh, 2, function(x) {tab <- table(x)/n; names(sort(tab, decreasing=TRUE))[1]})
+	classification$phase <- n_votes
+	return(classification)
+}
+	
+
 
 #regressCycleScater <- function(obj, classification, expr_name="logcounts", method=c("scores", "phase")){
 #	if (class(obj)[1] != "SingleCellExperiment") {
