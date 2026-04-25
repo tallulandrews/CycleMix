@@ -109,14 +109,20 @@ classifyCells <- function(obj, CC_table, expr_name="logcounts", do.scale=FALSE, 
 
 # Uses knn to smooth out phase assignments to make it less conservative
 # dims = lower dimensional space rows = cells, columns = dimensions, must be in same order as cells in classification
-knnSmooth <- function(classification, dims=NULL, clusters=NULL, k=20) {
+knnSmooth <- function(classification, dims=NULL, clusters=NULL, k=20, min.threshold=0.25) {
 	if (is.null(dims) & is.null(clusters)) {
 		stop("Error: either dims or clusters are required for smoothing phase assignments")
 	}
 
 	if (!is.null(clusters)) {
 		tab <- table(clusters, classification$phase)	
-		cluster_phase <- apply(tab, 1, function(x){tmp <- colnames(tab)[which(x==max(x))]; return(tmp[1])})
+		tab <- tab/rowSums(tab) # convert to %
+		cluster_phase <- apply(tab, 1, function(x){
+			if ("None" %in% colnames(tab) & x[colnames(tab) == "None"] < (1-min.threshold)) {
+				x[colnames(tab) == "None"] <- 0
+			}
+			tmp <- colnames(tab)[which(x==max(x))]; 
+			return(tmp[1])})
 		for(i in 1:length(cluster_phase)) {
 			classification$phase[clusters == names(cluster_phase)[i]] <- cluster_phase[i]
 		}
@@ -161,7 +167,7 @@ knnSmooth <- function(classification, dims=NULL, clusters=NULL, k=20) {
 	knns_neigh <- apply(knns, 1, function(x){unlist(classification$phase[x+1])})
 	n_votes <- apply(knns_neigh, 2, function(x) {
 			tab <- table(x)/k; 
-			if ("None" %in% names(tab) & tab["None"] < 0.75) {
+			if ("None" %in% names(tab) & tab["None"] < (1-min.threshold)) {
 				tab <- tab[names(tab) != "None"]
 			}
 			names(sort(tab, decreasing=TRUE))[1]})
