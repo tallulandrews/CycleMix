@@ -154,12 +154,17 @@ knnSmooth <- function(classification, dims=NULL, clusters=NULL, k=20) {
 	# First smooth those not assigned to any cell-cycle phase
 	smooth_first <- which(classification$phase == "None")
 	knns_neigh <- apply(knns, 1, function(x){unlist(classification$phase[x+1])})
-	n_votes <- apply(knns_neigh, 2, function(x) {tab <- table(x)/n; names(sort(tab, decreasing=TRUE))[1]})
-	classification$phase[[smooth_first]] <- n_votes[[smooth_first]]
+	n_votes <- apply(knns_neigh, 2, function(x) {tab <- table(x)/k; names(sort(tab, decreasing=TRUE))[1]})
+	classification$phase[smooth_first] <- n_votes[smooth_first]
 	
 	# Then smooth again
 	knns_neigh <- apply(knns, 1, function(x){unlist(classification$phase[x+1])})
-	n_votes <- apply(knns_neigh, 2, function(x) {tab <- table(x)/n; names(sort(tab, decreasing=TRUE))[1]})
+	n_votes <- apply(knns_neigh, 2, function(x) {
+			tab <- table(x)/k; 
+			if ("None" %in% names(tab) & tab["None"] < 0.75) {
+				tab <- tab[names(tab) != "None"]
+			}
+			names(sort(tab, decreasing=TRUE))[1]})
 	classification$phase <- n_votes
 	return(classification)
 }
