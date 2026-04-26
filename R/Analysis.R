@@ -117,6 +117,7 @@ knnSmooth <- function(classification, dims=NULL, clusters=NULL, k=20, min.thresh
 	if (!is.null(clusters)) {
 		tab <- table(clusters, classification$phase)	
 		tab <- tab/rowSums(tab) # convert to %
+		tab <- tab[!is.na(rowSums(tab)),]
 		cluster_phase <- apply(tab, 1, function(x){
 			if ("None" %in% colnames(tab) & x[colnames(tab) == "None"] < (1-min.threshold)) {
 				x[colnames(tab) == "None"] <- 0
