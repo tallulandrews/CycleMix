@@ -5,6 +5,7 @@ plotMixture <- function(fit, BIC=FALSE) {
 		par(mfrow=c(1,2))
 		par(mar=c(4,4,3,1))
 		xes <- as.vector(fit$BIC)
+		xes[is.na(xes)] <- -1
 		yes1 <- seq(from=1, to=9, by=3)
 		yes2 <- seq(from=2, to=9, by=3)
 		yes <- c(yes1, yes2)
