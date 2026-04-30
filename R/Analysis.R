@@ -107,6 +107,34 @@ classifyCells <- function(obj, CC_table, expr_name="logcounts", do.scale=FALSE, 
 	return(list(phase=best, scores=scores, fits=out_list))
 }
 
+checkFit <- function(classification, nbootstrap=100, summarize=FALSE, D.threshold=0.1) {
+	output <- list()
+	for (phase in names(classification$fits)) {
+		fit <- out$fits[[phase]]
+		means <- fit$parameters$mean
+		sigmasq <- fit$parameters$variance$sigmasq
+		ns <- table(fit$classification)
+		ks.pvals <-rep(0,times=nbootstrap)
+		ks.D <-rep(0,times=nbootstrap)
+		for (i in 1:nbootstrap) {
+			exp <- sapply(1:length(means), function(x) {
+				rnorm(ns[x], mean=means[x], sd=sqrt(sigmasq[x]))})
+			res <- suppressWarnings(ks.test(unlist(exp), fit$data[,1]))
+			ks.D[i] <- res$statistic
+			ks.pvals[i] <- res$p.value
+		}
+		output[[phase]] <- list(ks.D=ks.D, ks.pvals=ks.pvals)
+	}
+	if (summarize) {
+		per_phase_D <- sapply(output, function(x){mean(x$ks.D)})
+		overall_D <- mean(per_phase_D)
+		per_phase_p <- sapply(output, function(x){mean(x$ks.pvals)})
+		overall_p <- mean(per_phase_p)
+		return(list(average_D=overall_D, average_p=overall_p, good.fit=overall_D < D.threshold))
+	}
+	return(output)
+}
+
 # Uses knn to smooth out phase assignments to make it less conservative
 # dims = lower dimensional space rows = cells, columns = dimensions, must be in same order as cells in classification
 knnSmooth <- function(classification, dims=NULL, clusters=NULL, k=20, min.threshold=0.25) {

@@ -5,7 +5,7 @@ Title: Cell-Cycle using Mixture Models
 Author: Tallulah Andrews <tallulandrews@gmail.com>
 Maintainer: Tallulah Andrews <tallulandrews@gmail.com>
 Depends: R (>= 3.5.0)
-Imports: mclust, scater, SummarizedExperiment, matrixStats, MASS, Seurat, Matrix, biomaRt, SeuratObject
+Imports: mclust, scater, SummarizedExperiment, matrixStats, MASS, Seurat, Matrix, biomaRt, SeuratObject, RcppAnnoy, future, future.apply
 Suggests: knitr, rmarkdown, BiocStyle, SingleCellExperiment
 VignetteBuilder: knitr, BiocStyle, rmarkdown
 biocViews: RNASeq, Sequencing, Transcriptomics, GeneExpression, Software

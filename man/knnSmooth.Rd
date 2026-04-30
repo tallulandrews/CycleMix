@@ -1,8 +1,8 @@
 \name{knnSmooth}
 \alias{knnSmooth}
-\title{Regress out cell-cycle}
+\title{Smooth cell-cycle assignments}
 \description{
-Uses a GLM to remove differences between specified cell-cycle phases.
+ smooths a set of cell-cycle assignments either using a knn graph or using a set of clusters.
 }
 \usage{
   knnSmooth(classification, dims=NULL, clusters=NULL, k=20, min.threshold=0.25)
