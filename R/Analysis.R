@@ -110,7 +110,7 @@ classifyCells <- function(obj, CC_table, expr_name="logcounts", do.scale=FALSE, 
 checkFit <- function(classification, nbootstrap=100, summarize=FALSE, D.threshold=0.1) {
 	output <- list()
 	for (phase in names(classification$fits)) {
-		fit <- out$fits[[phase]]
+		fit <- classification$fits[[phase]]
 		means <- fit$parameters$mean
 		sigmasq <- fit$parameters$variance$sigmasq
 		ns <- table(fit$classification)
@@ -130,7 +130,7 @@ checkFit <- function(classification, nbootstrap=100, summarize=FALSE, D.threshol
 		overall_D <- mean(per_phase_D)
 		per_phase_p <- sapply(output, function(x){mean(x$ks.pvals)})
 		overall_p <- mean(per_phase_p)
-		return(list(average_D=overall_D, average_p=overall_p, good.fit=overall_D < D.threshold))
+		return(list(average_D=per_phase_D, average_p=per_phase_p, good.fit=overall_D < D.threshold))
 	}
 	return(output)
 }
