@@ -1,5 +1,5 @@
 Package: CycleMix
-Version: 0.99.00
+Version: 0.99.01
 Date: 2018-04-16
 Title: Cell-Cycle using Mixture Models
 Authors@R: person(given="Tallulah", family="Andrews",
