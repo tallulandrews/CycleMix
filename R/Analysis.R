@@ -2,21 +2,21 @@ prepData <- function(obj, expr_name="logcounts", do.scale=FALSE, symbol_column=N
 	gene_names <- rownames(obj)
 
 	expr_mat <- c()
-	if (class(obj)[1] == "SingleCellExperiment") {
+	if (is(obj, "SingleCellExperiment")) {
 		expr_mat <- SummarizedExperiment::assays( obj )[[expr_name]]
 		gene_names <- rownames(expr_mat)
 		if (!is.null(symbol_column)) {
 			gene_names <- SummarizedExperiment::rowData(obj)[ , symbol_column]
 		}
 	}
-	if (class(obj)[1] == "Seurat") {
+	if (is(obj, "Seurat")) {
 		expr_mat <- Seurat::GetAssayData( obj, assay=expr_name, layer="data" )
 		gene_names <- rownames(expr_mat)
 		if (!is.null(symbol_column)) {
 			gene_names <- symbol_column
 		}
 	}
-	if (class(obj)[1] == "dgCMatrix" | class(obj)[1] == "dgTMatrix" | class(obj)[1] == "matrix") {
+	if (is(obj, "Matrix") | is(obj, "matrix")) {
 		expr_mat <- obj
 		gene_names <- rownames(expr_mat)
 		if (!is.null(symbol_column)) {
@@ -147,9 +147,10 @@ knnSmooth <- function(classification, dims=NULL, clusters=NULL, k=20, min.thresh
 		tab <- tab/rowSums(tab) # convert to %
 		tab <- tab[!is.na(rowSums(tab)),]
 		cluster_phase <- apply(tab, 1, function(x){
-			if ("None" %in% colnames(tab) & x[colnames(tab) == "None"] < (1-min.threshold)) {
+			if ("None" %in% colnames(tab)){
+				if (x[colnames(tab) == "None"] < (1-min.threshold)) {
 				x[colnames(tab) == "None"] <- 0
-			}
+			}}
 			tmp <- colnames(tab)[which(x==max(x))]; 
 			return(tmp[1])})
 		for(i in 1:length(cluster_phase)) {
@@ -159,8 +160,8 @@ knnSmooth <- function(classification, dims=NULL, clusters=NULL, k=20, min.thresh
 	}
 
 	# KNN Smoothing
-	n.trees = 50;
-	search.k = -1
+	n.trees <- 50;
+	search.k <- -1
 	# Annoy kNN
 	f <- ncol(x = dims)
 	# Build Annoy Index
@@ -204,24 +205,6 @@ knnSmooth <- function(classification, dims=NULL, clusters=NULL, k=20, min.thresh
 	return(classification)
 }
 	
-
-
-#regressCycleScater <- function(obj, classification, expr_name="logcounts", method=c("scores", "phase")){
-#	if (class(obj)[1] != "SingleCellExperiment") {
-#		stop("Error: Requires SingleCellExperiment object as input")
-#	}
-#
-#	if (method[1] == "phase") {
-#		design <- model.matrix(~classification$phase)
-#	} else if (method[1] == "scores") {
-#		design <- model.matrix(~classification$scores)
-#	} else {
-#		stop("Error: unrecognized method.")
-#	}
-#	obj <- scater::normalizeExprs(obj, design=design, return_norm_as_exprs=FALSE, exprs_values=expr_name)
-#	return(obj);
-#}
-
 # regresses out the differences between only the specified cell cycle phases
 # first phase will be used as the reference phase for discrete regression
 regressCyclePartial <- function(expr_mat, classification, type=c("counts","norm"), method=c("scores", "phase"), phases=c("G2M", "G1S"), allow_negative=FALSE, subsample_cells=ncol(expr_mat)) {
