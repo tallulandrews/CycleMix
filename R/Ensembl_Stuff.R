@@ -1,9 +1,9 @@
 getEnsemblArchive <- function() {
 	tab <- biomaRt::listEnsemblArchives()
-	date <- matrix(unlist(strsplit(tab[,"date"], " ")), ncol=2, byrow=T)
+	date <- matrix(unlist(strsplit(tab[,"date"], " ")), ncol=2, byrow=TRUE)
 	date <- as.Date(paste(1, toupper(date[,1]), date[,2], sep="-"), format="%d-%b-%Y")
-	tab <- tab[order(date, decreasing=T),]
-	tab <- tab[ grepl("Ensembl [1-9]", tab[,1], ignore.case=F) , ]
+	tab <- tab[order(date, decreasing=TRUE),]
+	tab <- tab[ grepl("Ensembl [1-9]", tab[,1], ignore.case=FALSE) , ]
 	return(tab[,"url"])	
 }
 
@@ -93,7 +93,7 @@ map_Hsap_Mmus <- function(maps, genes, is.org=c("Hsap","Mmus")) {
 	} else {
 		stop("Unrecognized organism");
 	}
-	new[is.na(new)] = ""
+	new[is.na(new)] <- ""
 	return(new);
 }
 

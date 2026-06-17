@@ -1,5 +1,5 @@
 Package: CycleMix
-Version: 0.99.01
+Version: 0.99.02
 Date: 2018-04-16
 Title: Cell-Cycle using Mixture Models
 Authors@R: person(given="Tallulah", family="Andrews",
@@ -7,14 +7,14 @@ Authors@R: person(given="Tallulah", family="Andrews",
 		  email="tallulandrews@gmail.com",
 		  comment=c(ORCID="0000-0003-1120-2196"))
 Depends: R (>= 3.5.0)
-Imports: mclust, scater, SummarizedExperiment, matrixStats, MASS, Seurat, Matrix, biomaRt, SeuratObject, RcppAnnoy, future, future.apply
+Imports: mclust, SummarizedExperiment, matrixStats, MASS, Seurat, Matrix, biomaRt, SeuratObject, RcppAnnoy, future, future.apply, methods
 Suggests: knitr, rmarkdown, BiocStyle, SingleCellExperiment
-VignetteBuilder: knitr, BiocStyle, rmarkdown
+VignetteBuilder: knitr
 biocViews: RNASeq, Sequencing, Transcriptomics, GeneExpression, Software
 Collate: Ensembl_Stuff.R Analysis.R Plotting.R
 LazyData: true
 LazyDataCompression: xz
-Description: This package uses mixture models to assign cells to different stages of the cell-cycle with wrapper for using scater to remove the effect of cell-cycle stage from your dataset. 
+Description: This package uses mixture models to assign cells to different stages of the cell-cycle and has a flexible regression model to remove the effect of one or more cell-cycle stages. 
 URL: https://github.com/tallulandrews/CycleMix 
 BugReports: https://github.com/tallulandrews/CycleMix/issues
 Encoding: UTF-8
