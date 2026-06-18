@@ -1,6 +1,6 @@
 Package: CycleMix
-Version: 0.99.03
-Date: 2018-04-16
+Version: 0.99.04
+Date: 2018-06-18
 Title: Cell-Cycle using Mixture Models
 Authors@R: person(given="Tallulah", family="Andrews",
 		  role=c("aut", "cre"),
