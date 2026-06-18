@@ -209,7 +209,7 @@ knnSmooth <- function(classification, dims=NULL, clusters=NULL, k=20, min.thresh
 # first phase will be used as the reference phase for discrete regression
 regressCyclePartial <- function(expr_mat, classification, type=c("counts","norm"), method=c("scores", "phase"), phases=c("G2M", "G1S"), allow_negative=FALSE, subsample_cells=ncol(expr_mat)) {
 
-	if (class(classification) != "list") {
+	if (! is(classification, "list")) {
 		existing_phases <- unique(classification)
 		method = "phase"
 	} else {
@@ -293,7 +293,7 @@ glm_discrete <- function(x, phases, model, type=c("counts", "norm"), allow_negat
 		res <- tryCatch(MASS::glm.nb(x2~model2),
 			warning = function(w){skip(x)},
 			error = function(e){skip(x)})
-		if(class(res)[1]== "numeric") {
+		if(is(res,"numeric")) {
 			return(res)
 		}
 		
@@ -330,7 +330,7 @@ glm_continuous <- function(x, model,  type=c("counts", "norm"), allow_negative=F
 		res <- tryCatch(MASS::glm.nb(x~model),
 			warning = function(w){skip(x)},
 			error = function(e){skip(x)})
-		if(class(res)[1]== "numeric") {
+		if(is(res, "numeric")) {
 			return(res)
 		}
         } else if (type[1] == "norm") {
