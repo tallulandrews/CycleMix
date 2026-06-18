@@ -5,7 +5,7 @@
  Checks the goodness of fit of the gaussian mixture model using a bootstrap appraoch.
 }
 \usage{
-	checkFit(classification, nbootstrap=100, summarize=FALSE, D.threshold=0.1) 
+	checkFit(classification, nbootstrap=100, summarize=TRUE, D.threshold=0.1) 
 }
 \arguments{
   \item{classification}{output from \code{classifyCells}.}

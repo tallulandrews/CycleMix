@@ -107,7 +107,7 @@ classifyCells <- function(obj, CC_table, expr_name="logcounts", do.scale=FALSE, 
 	return(list(phase=best, scores=scores, fits=out_list))
 }
 
-checkFit <- function(classification, nbootstrap=100, summarize=FALSE, D.threshold=0.1) {
+checkFit <- function(classification, nbootstrap=100, summarize=TRUE, D.threshold=0.1) {
 	output <- list()
 	for (phase in names(classification$fits)) {
 		fit <- classification$fits[[phase]]
