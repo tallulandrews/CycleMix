@@ -289,37 +289,58 @@ glm_discrete <- function(x, phases, model, type=c("counts", "norm"), allow_negat
 		model2 <- model
 	}
 
+	# Catching genes where the model won't fit properly
 	skip <- function(x) {
 		print("Warning: model failed to fit some genes, they will not be corrected.");
 		return(x)}
 	if (var(x2) == 0) {return(x)}
 	if (sum(x2 > 0) < 5) {return(x)} 
 
-
 	if (type[1] == "counts") {
-		res <- tryCatch(MASS::glm.nb(x2~model2),
+		# Counts
+		res <- tryCatch(MASS::glm.nb(x2~model2[,-1]),
 			warning = function(w){skip(x)},
 			error = function(e){skip(x)})
 		if(is(res,"numeric")) {
 			return(res)
 		}
-		
-	} else if (type[1] == "norm") {
-		res <- glm(x2~model2)
-	}
-	# Coeffs are average difference 
-	change <- rep(0, length(x))
-	to_change <- names(res$coefficients)
-	to_change <- to_change[!(grepl("Intercept", to_change) | grepl("Other", to_change))]
-	for (coeff in to_change) {
-		this_eff <- res$coefficients[coeff]
-		if (!allow_negative) { #adjust for not changing 0s
-			adj <- mean(x[model[,sub("model2", "",coeff)]==1] > 0) # proportion of non-0s - these won't be changed
-			this_eff <- this_eff*1/adj; # adjust for not shifting zeros
+		# Coeffs are log fold-changes
+		fold_changes <- t( t(model2) * exp(res$coefficients))
+		fold_changes[,1] <- 1; # Ignore the Intercept.
+
+		if (max(grepl("Other", colnames(fold_changes))) == 1) {
+			# there is a phase we aren't correcting
+			ref_group <- grep("Other", colnames(fold_changes))
+			ref_fc <- exp(res$coefficients)[grepl("Other", names(res$coefficients))]
+
+			fold_changes <- fold_changes[,-ref_group]
+			change <- apply(fold_changes, 1, prod)/ref_fc
+			change[change==0] <- 1
+			out <- out*change
+		} else {
+			change <- apply(fold_changes, 1, prod)
+			change[change==0] <- 1
+			out <- out*change
 		}
-		change[model[,sub("model2", "",coeff)] == 1] <- this_eff
+	} else if (type[1] == "norm") {
+		# Norm
+		res <- glm(x2~model2)
+		# Coeffs are average difference 
+		change <- rep(0, length(x))
+		to_change <- names(res$coefficients)
+		to_change <- to_change[!(grepl("Intercept", to_change) |
+					 grepl("Other", to_change))]
+
+		for (coeff in to_change) {
+			this_eff <- res$coefficients[coeff]
+			if (!allow_negative) { #adjust for not changing 0s
+				adj <- mean(x[model[,sub("model2", "",coeff)]==1] > 0) # proportion of non-0s - these won't be changed
+				this_eff <- this_eff*1/adj; # adjust for not shifting zeros
+			}
+			change[model[,sub("model2", "",coeff)] == 1] <- this_eff
+		}
+		out <- x-change
 	}
-	out <- x-change
 	if (!allow_negative) {
 		out[out < 0] <- 0
 		out[x==0] <- 0
