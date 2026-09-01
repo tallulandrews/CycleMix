@@ -22,5 +22,18 @@ symbol_column is either the column of the rowData (SingleCellExperiment) contain
 	a "matrix" or "Matrix" of the specified log-normalized expression values with the specified gene symbols as the rownames.
 }
 \examples{
-	expr_mat <- prepData(Ex, symbol_column="feature_symbol") # Ex = SingleCellExperiment Object
+	# SingleCellExperiment Object
+	data(esc_Smartseq_example)
+	expr_mat <- prepData(esc_Smartseq_example, symbol_column="feature_symbol") # esc_Smartseq_example = SingleCellExperiment Object
+
+	# Matrix
+	data(ileum_10X_example) # list containing counts as a Matrix and metadata
+	counts <- prepData(ileum_10X_example$counts)
+
+	# Seurat Object
+	require(Seurat)
+	seur_obj <- Seurat::CreateSeuratObject(counts=counts);
+	seur_obj <- Seurat::NormalizeData(seur_obj)
+	expr_mat <- prepData(seur_obj, expr_name="RNA")
+
 }

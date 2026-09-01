@@ -1,3 +1,4 @@
+# @export
 prepData <- function(obj, expr_name="logcounts", do.scale=FALSE, symbol_column=NULL) {
 	gene_names <- rownames(obj)
 
@@ -36,6 +37,7 @@ prepData <- function(obj, expr_name="logcounts", do.scale=FALSE, symbol_column=N
 	return(expr_mat)
 }
 
+# @export
 assignPhase <- function(expr_mat, CC_table, phase="G2M") {
 	# Expression Signature
 	signature <- CC_table[,"Stage"] == phase
@@ -74,6 +76,7 @@ assignPhase <- function(expr_mat, CC_table, phase="G2M") {
 }
 
 # Seurat: obj, gene_table, expr_name="RNA", symbol_column=NULL
+# @export
 classifyCells <- function(obj, CC_table, expr_name="logcounts", do.scale=FALSE, symbol_column=NULL, allow.multi=FALSE) {
 
 	out_list <- list()
@@ -107,6 +110,7 @@ classifyCells <- function(obj, CC_table, expr_name="logcounts", do.scale=FALSE, 
 	return(list(phase=best, scores=scores, fits=out_list))
 }
 
+# @export
 checkFit <- function(classification, nbootstrap=100, summarize=TRUE, D.threshold=0.1) {
 	output <- list()
 	for (phase in names(classification$fits)) {
@@ -137,6 +141,7 @@ checkFit <- function(classification, nbootstrap=100, summarize=TRUE, D.threshold
 
 # Uses knn to smooth out phase assignments to make it less conservative
 # dims = lower dimensional space rows = cells, columns = dimensions, must be in same order as cells in classification
+# @export
 knnSmooth <- function(classification, dims=NULL, clusters=NULL, k=20, min.threshold=0.25) {
 	if (is.null(dims) & is.null(clusters)) {
 		stop("Error: either dims or clusters are required for smoothing phase assignments")
@@ -207,6 +212,7 @@ knnSmooth <- function(classification, dims=NULL, clusters=NULL, k=20, min.thresh
 	
 # regresses out the differences between only the specified cell cycle phases
 # first phase will be used as the reference phase for discrete regression
+# @export
 regressCyclePartial <- function(expr_mat, classification, type=c("counts","norm"), method=c("scores", "phase"), phases=c("G2M", "G1S"), allow_negative=FALSE, subsample_cells=ncol(expr_mat)) {
 
 	if (! is(classification, "list")) {
@@ -273,6 +279,7 @@ regressCyclePartial <- function(expr_mat, classification, type=c("counts","norm"
 	return(t(corrected));
 }
 
+# @internal
 glm_discrete <- function(x, phases, model, type=c("counts", "norm"), allow_negative=FALSE, tofit.cells=colnames(x)) {
 	if (sum(tofit.cells) < length(x)) {
 		x2 <- x[tofit.cells]
@@ -320,6 +327,7 @@ glm_discrete <- function(x, phases, model, type=c("counts", "norm"), allow_negat
 	return(out)
 }
 
+# @internal
 glm_continuous <- function(x, model,  type=c("counts", "norm"), allow_negative=FALSE) {
 	skip <- function(x) {
 		print("Warning: model failed to fit some genes, they will not be corrected.");

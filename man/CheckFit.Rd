@@ -22,8 +22,10 @@
 	if summarize = FALSE, returns a list of lists of output from the ks.test for every boostrap sampling for every phase.
 }
 \examples{
+	data(esc_Smartseq_example)
+	data(MGeneSets)
 	require(SingleCellExperiment)
-	classification <- classifyCells(Ex,  MGeneSets$Cyclone, do.scale=TRUE, allow.multi=FALSE, symbol_column="feature_symbol");
+	classification <- classifyCells(esc_Smartseq_example,  MGeneSets$Cyclone, do.scale=TRUE, allow.multi=FALSE, symbol_column="feature_symbol");
 	good.fit.allres <- checkFit(classification, 100, summarize=FALSE)
 	good.fit <- checkFit(classification, 100, summarize=TRUE)
 }

@@ -1,3 +1,4 @@
+# @export
 plotMixture <- function(fit, BIC=FALSE) {
 	mar0 <- par()$mar
 	name <- unique(fit$phase[fit$phase!=""])
@@ -43,6 +44,7 @@ plotMixture <- function(fit, BIC=FALSE) {
 	}
 }
 
+# @export
 plot_Phases <- function(classification_out, phases, cell_colours=NULL){
 	if (sum(phases %in% colnames(classification_out$scores)) < 2) {
 		stop("Insufficient phases specified, or cannot find scores for specified phases.")

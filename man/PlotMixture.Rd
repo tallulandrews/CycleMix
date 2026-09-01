@@ -16,13 +16,17 @@
 
 }
 \value{ 
-	The input SingleCellExperiment object with the regressed expression saved to the 'norm_exprs' slot.
+	No output.
 }
 \examples{
-	fit <- assignPhase(Ex2.2$counts, HGeneSets$Tirosh, "G2M")
+	data(ileum_10X_example)
+	data(esc_Smartseq_example)
+	data(MGeneSets)
+	data(HGeneSets)
+	fit <- assignPhase(ileum_10X_example$counts, HGeneSets$Tirosh, "G2M")
 	plotMixture(fit, BIC=TRUE)
 
-	classification <- classifyCells(Ex,  MGeneSets$Cyclone, do.scale=TRUE, allow.multi=FALSE, symbol_column="feature_symbol")
+	classification <- classifyCells(esc_Smartseq_example,  MGeneSets$Cyclone, do.scale=TRUE, allow.multi=FALSE, symbol_column="feature_symbol")
 
 	plotMixture(classification$fits[[1]], BIC=FALSE)
 }

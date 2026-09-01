@@ -25,12 +25,14 @@ Uses a GLM to remove differences between specified cell-cycle phases.
 	\code{regressCyclePartial} Uses a glm to regress out differences among a select set of cell cycle phases
 }
 \examples{
+	data(esc_Smartseq_example)
+	data(MGeneSets)
 	require(SingleCellExperiment)
-	classification <- classifyCells(Ex,  MGeneSets$Cyclone, do.scale=TRUE, allow.multi=FALSE, symbol_column="feature_symbol");
-	regressed_counts1 <- regressCyclePartial(counts(Ex), classification, type="counts", method="scores", phases=c("S", "G2M"), allow_negative=FALSE, subsample_cells=500)
-	regressed_counts2 <- regressCyclePartial(counts(Ex), classification, type="counts", method="phase", phases=c("S", "G2M"), allow_negative=TRUE, subsample_cells=500)
-	regressed_lognorm1 <- regressCyclePartial(logcounts(Ex), classification, type="norm", method="scores", phases=c("G1", "S", "G2M"), allow_negative=FALSE, subsample_cells=500)
-	regressed_lognorm2 <- regressCyclePartial(logcounts(Ex), classification, type="norm", method="phase", phases=c("G1", "S", "G2M"), allow_negative=TRUE, subsample_cells=500)
+	classification <- classifyCells(esc_Smartseq_example,  MGeneSets$Cyclone, do.scale=TRUE, allow.multi=FALSE, symbol_column="feature_symbol");
+	regressed_counts1 <- regressCyclePartial(counts(esc_Smartseq_example), classification, type="counts", method="scores", phases=c("S", "G2M"), allow_negative=FALSE, subsample_cells=500)
+	regressed_counts2 <- regressCyclePartial(counts(esc_Smartseq_example), classification, type="counts", method="phase", phases=c("S", "G2M"), allow_negative=TRUE, subsample_cells=500)
+	regressed_lognorm1 <- regressCyclePartial(logcounts(esc_Smartseq_example), classification, type="norm", method="scores", phases=c("G1", "S", "G2M"), allow_negative=FALSE, subsample_cells=500)
+	regressed_lognorm2 <- regressCyclePartial(logcounts(esc_Smartseq_example), classification, type="norm", method="phase", phases=c("G1", "S", "G2M"), allow_negative=TRUE, subsample_cells=500)
 }
 \keyword{cell cycle, normalization}
 \seealso{classifyCells}

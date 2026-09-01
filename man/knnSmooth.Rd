@@ -26,11 +26,13 @@
 	the input classification results updated with the smoothed classifications.
 }
 \examples{
+	data(esc_Smartseq_example)
+	data(MGeneSets)
 	require(SingleCellExperiment)
-	classification <- classifyCells(Ex,  MGeneSets$Cyclone, do.scale=TRUE, allow.multi=FALSE, symbol_column="feature_symbol");
-	pca <- matrix(rnorm(ncol(Ex)*10), ncol=10)
+	classification <- classifyCells(esc_Smartseq_example,  MGeneSets$Cyclone, do.scale=TRUE, allow.multi=FALSE, symbol_column="feature_symbol");
+	pca <- matrix(rnorm(ncol(esc_Smartseq_example)*10), ncol=10)
 	classification <- knnSmooth(classification, dims=pca, k=20)
-	classification <- knnSmooth(classification, clusters=Ex$cell_type1) 
+	classification <- knnSmooth(classification, clusters=esc_Smartseq_example$cell_type1) 
 }
 \keyword{cell cycle, smoothing}
 \seealso{classifyCells}

@@ -1,10 +1,10 @@
 \docType{data}
-\name{Ex}
-\title{Example scRNASeq Data}
-\alias{Ex}
+\name{esc_Smartseq_example}
+\title{esc_Smartseq_exampleample scRNASeq Data}
+\alias{esc_Smartseq_example}
 \format{ A SingleCellExperiment object containing 2002 genes and 273 cells
 }
-\usage{Ex}
+\usage{esc_Smartseq_example}
 \description{
 	Filtered gene expression matrix of cell-cycle staged mESCs from Buettner et al. (2015). 
 Cells were filtered to remove those with fewer than 6000 detected genes. Genes where filtered to

@@ -11,7 +11,7 @@
 }
 \arguments{
   \item{expr_mat}{a matrix or Matrix with rownames that match the gene names in the CC_table.}
-  \item{obj}{a SingleCellExperiment object or a Seurat object or a matrix/Matrix.}
+  \item{obj}{a SingleCellesc_Smartseq_exampleperiment object or a Seurat object or a matrix/Matrix.}
   \item{CC_table}{a dataframe with three columns: Gene, Stage, Dir}
   \item{phase}{which cell-cycle stage to assign cells to, must be a value found in "Stage" of CC_table}
   \item{expr_name}{name of the expression matrix to use, must be an element of assays(obj), should be at minimum library-size normalized and log-transformed. If obj is a Seurat object the "assay" from which to obtain the "data" matrix from (typically "RNA" or "SCT").}
@@ -45,11 +45,13 @@ has the highest signature.
 	"fits" : a list of output from assignPhase.
 }
 \examples{
-	expr_mat <- prepData(Ex, symbol_column="feature_symbol") # Ex = SingleCellExperiment Object
+	data(esc_Smartseq_example)
+	data(MGeneSets)
+	expr_mat <- prepData(esc_Smartseq_example, symbol_column="feature_symbol") # esc_Smartseq_example = SingleCellesc_Smartseq_exampleperiment Object
 	fit <- assignPhase(expr_mat, MGeneSets$Cyclone, phase="G2M")
 
-	classification <- classifyCells(Ex,  MGeneSets$Cyclone, do.scale=TRUE, allow.multi=FALSE, symbol_column="feature_symbol")
+	classification <- classifyCells(esc_Smartseq_example,  MGeneSets$Cyclone, do.scale=TRUE, allow.multi=FALSE, symbol_column="feature_symbol")
 
-	classification <- classifyCells(Ex,  MGeneSets$Cyclone, do.scale=FALSE, allow.multi=TRUE, symbol_column="feature_symbol")
+	classification <- classifyCells(esc_Smartseq_example,  MGeneSets$Cyclone, do.scale=FALSE, allow.multi=TRUE, symbol_column="feature_symbol")
 }
 \keyword{cell cycle, mixture models}
