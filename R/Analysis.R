@@ -268,7 +268,7 @@ regressCyclePartial <- function(expr_mat, classification, type=c("counts","norm"
 		
 		model <- stats::model.matrix(~new_phase_labels)
 		model <- model[,Matrix::colSums(model)>0] # remove any columns with no cells present.
-		corrected <- apply(expr_mat, 1, glm_discrete, phases, model, type, allow_negative, colnames(expr_mat) %in% cells)
+		corrected <- apply(expr_mat, 1, glm_discrete, phases, model, type, allow_negative, colnames(expr_mat) %in% cells, colSums(expr_mat))
 	}
 
 	if (method == "scores") {
@@ -280,7 +280,7 @@ regressCyclePartial <- function(expr_mat, classification, type=c("counts","norm"
 }
 
 # @internal
-glm_discrete <- function(x, phases, model, type=c("counts", "norm"), allow_negative=FALSE, tofit.cells=colnames(x)) {
+glm_discrete <- function(x, phases, model, type=c("counts", "norm"), allow_negative=FALSE, tofit.cells=colnames(x), seq_depth=NULL) {
 	if (sum(tofit.cells) < length(x)) {
 		x2 <- x[tofit.cells]
 		model2 <- model[tofit.cells,]
@@ -298,6 +298,7 @@ glm_discrete <- function(x, phases, model, type=c("counts", "norm"), allow_negat
 
 	if (type[1] == "counts") {
 		# Counts
+		x2 <- x2+1
 		res <- tryCatch(MASS::glm.nb(x2~model2[,-1]),
 			warning = function(w){skip(x)},
 			error = function(e){skip(x)})
@@ -314,13 +315,15 @@ glm_discrete <- function(x, phases, model, type=c("counts", "norm"), allow_negat
 			ref_fc <- exp(res$coefficients)[grepl("Other", names(res$coefficients))]
 
 			fold_changes <- fold_changes[,-ref_group]
+			fold_changes[fold_changes==0] <- 1
 			change <- apply(fold_changes, 1, prod)/ref_fc
-			change[change==0] <- 1
-			out <- out*change
+			zero_adjustment <- seq_depth/mean(seq_depth)
+			out <- round( (x+zero_adjustment)/change ) - zero_adjustment # this isn't quite perfect when removing negatives but it's very close.
 		} else {
+			fold_changes[fold_changes==0] <- 1
 			change <- apply(fold_changes, 1, prod)
-			change[change==0] <- 1
-			out <- out*change
+			zero_adjustment <- seq_depth/mean(seq_depth)
+			out <- round( (x+zero_adjustment)/change ) - zero_adjustment # this isn't quite perfect when removing negatives but it's very close.
 		}
 	} else if (type[1] == "norm") {
 		# Norm
