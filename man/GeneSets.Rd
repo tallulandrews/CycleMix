@@ -36,9 +36,13 @@ the overall mean in our example data.
 \keyword{datasets}
 \references{
 	Cheung et al. (2013). Molecular regulation of stem cell quiescence (Table 1). Nat Rev Mol Cell Biol. 14:329-340.
+
 	Macosko et al. (2015) Highly Parallel Genome-wide Expression Profiling of Individual Cells Using nanoliter Droplets (Table S2). Cell. 161(5):1202-1214.
+
 	Scialdone et al. (2015) Computational assignment of cell-cycle stage from single-cell transcriptome data. Methods. 85:54-61
+
 	Tirosh et al. (2016) Dissecting the multicellular ecosystem of metastatic melanoma by single-cell RNA-seq (Table S5). Science. 352(6282):189-96.
+
 	Whitfield et al. (2002) Identification of genes periodically expressed in the human cell cycle and their expression in tumors. Mol Biol Cell. 13(6):1977-2000.
 }
 
