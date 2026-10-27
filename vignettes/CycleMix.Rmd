@@ -122,15 +122,15 @@ data(HGeneSets)
 ?HGeneSets
 ```
 ### Converting & Combining GeneSets
-We can convert human cell-cycle genes to mouse orthologs using biomaRt with our provided wrappers. For instance if we want to use the quiescence markers in mouse we would convert them as so:
+We can convert human cell-cycle genes to mouse orthologs using `orthogene`. For instance if we want to use the quiescence markers in mouse we would convert them as so:
 
-```{r eval=FALSE}
-# Not run due to instability of biomaRt and requirement for internet
-library("biomaRt") 
-map <- CycleMix::downloadEnsemblData()
-mouse_g0 <- HGeneSets$Quiesc
-mouse_g0$Gene <- CycleMix::mapGeneNames(map, mouse_g0$Gene, in.name="symbol", in.org="Hsap", out.name="symbol", out.org="Mmus")
-mouse_g0 <- mouse_g0[mouse_g0$Gene != "",]
+```{r}
+data(HGeneSets)
+library("orthogene")
+mouse_g0 <- HGeneSets$Quiesc 
+mapped_genes <- orthogene::convert_orthologs(as.character(mouse_g0$Gene), input_species="human", output_species="mouse", non121_strategy="keep_popular")
+mouse_g0 <- mouse_g0[match(mapped_genes$input_gene, mouse_g0$Gene),]
+mouse_g0$Gene <- rownames(mapped_genes)
 ```
 
 Gene sets can also be combined together easily:

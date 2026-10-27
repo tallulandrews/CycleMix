@@ -272,6 +272,7 @@ regressCyclePartial <- function(expr_mat, classification, type=c("counts","norm"
 	}
 
 	if (method == "scores") {
+		if(!allow_negative) {warning("Regressing scores uses residuals which are centered at 0, thus it is not recommended to forbid negative values when regressing scores")}
 		to_regress <- classification[,colnames(classification) %in% phases]
 		model <- stats::model.matrix(~to_regress)
 		corrected <- apply(expr_mat, 1, glm_continuous,  model=model, type=type, allow_negative=allow_negative)
